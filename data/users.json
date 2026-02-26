@@ -1,0 +1,26 @@
+[
+  {
+    "email": "elifredmason@gmail.com",
+    "passwordHash": "$2b$10$L79oxknqXxkrbCiykhaxE.QiWEMPIEb9YmHk4YHjRC9lraAGJ74hG",
+    "name": "eliezer martinez",
+    "createdAt": "2026-02-25T17:51:53.143Z"
+  },
+  {
+    "email": "asistentecompras@perfilesyservicios.com.ar",
+    "passwordHash": "$2b$10$o0Q4yuguhAmhclRn7Ed6duwIiF8CZXt.avg5SS7NudyRef91r13Oa",
+    "name": "eliezer martinez",
+    "createdAt": "2026-02-25T17:52:23.684Z"
+  },
+  {
+    "email": "orlandojosemartinez1946@gmail.com",
+    "passwordHash": "$2b$10$X6LzVnHpfFh8oXNwWpyk9emFMp/ZCh7Mrz1cexmj6EpwKNq17A7m.",
+    "name": "orlando martinez",
+    "createdAt": "2026-02-25T18:03:58.923Z"
+  },
+  {
+    "email": "marbelizlandaeta1955@gmail.com",
+    "passwordHash": "$2b$10$BgLMJ3HZspDSQQYm2UFfd.cbINDzwHmm8feJvKfRy7oQvy7gTSC/K",
+    "name": "marbeliz",
+    "createdAt": "2026-02-25T18:09:23.833Z"
+  }
+]

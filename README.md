@@ -4,6 +4,7 @@ App de gestión y almacén de productos.
 
 ## Hojas de Google Sheets
 
+- **clientes**: idcliente, nombre, telefono, email, direccion, fechaCreacion, **clave**. Si falta `clave`, añádela en la columna G (para login de usuarios).
 - **ventas**: idventa, fecha, cliente, nombre, cantidad, total, entregado. Si falta `entregado`, añádela en la columna H.
 - **compras**: idcompra, fecha, proveedor, idarticulo, articulo, cantidad, total, factura. Si falta `factura`, añádela en la columna H.
 

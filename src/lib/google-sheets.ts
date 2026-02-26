@@ -56,6 +56,8 @@ export interface Cliente {
   email?: string;
   direccion?: string;
   fechaCreacion: string;
+  /** Hash de la contraseña (bcrypt). Solo presente en clientes registrados para login. */
+  clave?: string;
 }
 
 /** Artículo individual dentro de una compra (array en campo articulo) */
@@ -1376,6 +1378,7 @@ export async function getClientes(): Promise<Cliente[]> {
     'creado',
     'created',
   ]);
+  const claveIdx = headerIndex(['clave', 'password', 'contraseña']);
   const idx = {
     id: headerIndex(['id', 'idcliente', 'id cliente', 'codigo', 'código']),
     nombre: headerIndex(['nombre']),
@@ -1383,6 +1386,7 @@ export async function getClientes(): Promise<Cliente[]> {
     email: headerIndex(['email', 'correo', 'e-mail']),
     direccion: headerIndex(['direccion', 'dirección', 'dir', 'address']),
     fechaCreacion: fechaCreacionIdx >= 0 ? fechaCreacionIdx : 5,
+    clave: claveIdx >= 0 ? claveIdx : -1,
   };
 
   return rows.slice(1).map((row) => {
@@ -1403,6 +1407,7 @@ export async function getClientes(): Promise<Cliente[]> {
       email: idx.email >= 0 ? get(idx.email) || undefined : undefined,
       direccion: idx.direccion >= 0 ? get(idx.direccion) || undefined : undefined,
       fechaCreacion: getFecha(idx.fechaCreacion),
+      clave: idx.clave >= 0 ? get(idx.clave) || undefined : undefined,
     } satisfies Cliente;
   });
 }
@@ -1414,12 +1419,27 @@ export interface ClienteNuevo {
   email?: string;
   direccion?: string;
   fechaCreacion: string;
+  /** Hash bcrypt de la contraseña (solo para registro de usuarios) */
+  clave?: string;
 }
 
 export async function clienteExiste(id: string): Promise<boolean> {
   const clientes = await getClientes();
   const buscado = id.trim().toLowerCase();
   return clientes.some((c) => c.idcliente.trim().toLowerCase() === buscado);
+}
+
+/** Busca un cliente por email (case-insensitive). */
+export async function getClientePorEmail(email: string): Promise<Cliente | null> {
+  const clientes = await getClientes();
+  const buscado = email.trim().toLowerCase();
+  return clientes.find((c) => (c.email ?? '').trim().toLowerCase() === buscado) ?? null;
+}
+
+/** Verifica si ya existe un cliente con ese email. */
+export async function clienteExistePorEmail(email: string): Promise<boolean> {
+  const c = await getClientePorEmail(email);
+  return c !== null;
 }
 
 export async function generarSiguienteIdCliente(): Promise<string> {
@@ -1444,12 +1464,13 @@ export async function insertarCliente(cliente: ClienteNuevo): Promise<void> {
       cliente.email ?? '',
       cliente.direccion ?? '',
       cliente.fechaCreacion,
+      cliente.clave ?? '',
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "'clientes'!A:F",
+    range: "'clientes'!A:G",
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
     requestBody: { values },
@@ -1492,8 +1513,12 @@ export async function actualizarCliente(
     throw new Error('Cliente no encontrado');
   }
 
+  const claveCol = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === 'clave');
+  const claveExistente = claveCol >= 0 && rows[rowIndex][claveCol] ? String(rows[rowIndex][claveCol]).trim() : '';
+  const claveFinal = cliente.clave !== undefined ? cliente.clave : claveExistente;
+
   const sheetRow = rowIndex + 1;
-  const range = `'clientes'!A${sheetRow}:F${sheetRow}`;
+  const range = `'clientes'!A${sheetRow}:G${sheetRow}`;
   const values = [
     [
       cliente.idcliente,
@@ -1502,6 +1527,7 @@ export async function actualizarCliente(
       cliente.email ?? '',
       cliente.direccion ?? '',
       cliente.fechaCreacion,
+      claveFinal,
     ],
   ];
 
