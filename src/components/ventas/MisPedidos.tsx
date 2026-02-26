@@ -43,7 +43,9 @@ function ModalVerPedido({ venta, onCerrar }: ModalVerPedidoProps) {
                 className={`font-medium ${
                   (venta.entregado || "").toLowerCase() === "pendiente" || !venta.entregado
                     ? "text-red-600"
-                    : "text-green-600"
+                    : (venta.entregado || "").toLowerCase() === "en preparacion" || (venta.entregado || "").toLowerCase() === "en reparto"
+                      ? "text-orange-600"
+                      : "text-green-600"
                 }`}
               >
                 {/^\d{4}-\d{2}-\d{2}$/.test((venta.entregado ?? "").trim())
@@ -120,7 +122,14 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
   const [ventaViendo, setVentaViendo] = useState<VentaList | null>(null);
   const [mostrarFormPedido, setMostrarFormPedido] = useState(false);
 
-  const totalPedidos = ventas.reduce((sum, v) => sum + (v.total ?? 0), 0);
+  const ventasOrdenadas = [...ventas].sort((a, b) => {
+    const fechaA = a.fecha || "";
+    const fechaB = b.fecha || "";
+    if (fechaA !== fechaB) return fechaB.localeCompare(fechaA);
+    return (b.idventa || "").localeCompare(a.idventa || "");
+  });
+
+  const totalPedidos = ventasOrdenadas.reduce((sum, v) => sum + (v.total ?? 0), 0);
 
   return (
     <div className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-8">
@@ -154,7 +163,7 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
 
         <div className="mb-4 rounded-lg bg-sky-50 border border-sky-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
           <span className="text-sm font-medium text-sky-800">
-            {ventas.length} pedido{ventas.length !== 1 ? "s" : ""}
+            {ventasOrdenadas.length} pedido{ventasOrdenadas.length !== 1 ? "s" : ""}
           </span>
           <span className="text-lg font-bold text-sky-700">
             Total: {formatPrecio(totalPedidos)}
@@ -187,7 +196,7 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
                 </tr>
               </thead>
               <tbody>
-                {ventas.length === 0 ? (
+                {ventasOrdenadas.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}
@@ -197,7 +206,7 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
                     </td>
                   </tr>
                 ) : (
-                  ventas.map((v, i) => {
+                  ventasOrdenadas.map((v, i) => {
                     const descripcionArticulos = v.articulos?.length
                       ? v.articulos
                           .map((a) =>
@@ -231,7 +240,9 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
                           className={`px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap ${
                             (v.entregado ?? "").toLowerCase() === "pendiente" || !v.entregado
                               ? "text-red-600"
-                              : "text-green-600"
+                              : (v.entregado ?? "").toLowerCase() === "en preparacion" || (v.entregado ?? "").toLowerCase() === "en reparto"
+                                ? "text-orange-600"
+                                : "text-green-600"
                           }`}
                         >
                           {/^\d{4}-\d{2}-\d{2}$/.test((v.entregado ?? "").trim())

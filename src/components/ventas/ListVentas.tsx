@@ -202,6 +202,11 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
       if (!(matchIdVenta || matchFecha || matchCliente || matchNombre || matchTotal || matchArticulos)) return false;
     }
     return true;
+  }).sort((a, b) => {
+    const fechaA = a.fecha || "";
+    const fechaB = b.fecha || "";
+    if (fechaA !== fechaB) return fechaB.localeCompare(fechaA);
+    return (b.idventa || "").localeCompare(a.idventa || "");
   });
 
   const totalVentasFiltradas = ventasFiltradas.reduce((sum, v) => sum + (v.total ?? 0), 0);
