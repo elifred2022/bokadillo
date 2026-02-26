@@ -9,7 +9,12 @@ import {
   type ReactNode,
 } from "react";
 
-const ADMIN_EMAIL = "elifredmason@gmail.com";
+const ADMIN_EMAILS = [
+  "elifredmason@gmail.com",
+  "hectorjlg0969@gmail.com",
+  "ftnorbelismartinez@gmail.com",
+  "bn028282@gmail.com",
+].map((e) => e.toLowerCase());
 
 export interface UsuarioAuth {
   idcliente: string;
@@ -18,7 +23,7 @@ export interface UsuarioAuth {
 }
 
 export function esAdmin(email: string): boolean {
-  return email?.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+  return ADMIN_EMAILS.includes(email?.trim().toLowerCase() ?? "");
 }
 
 interface AuthContextType {
