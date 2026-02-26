@@ -33,7 +33,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { fecha, articulos, total, cliente } = body;
+    const { fecha, articulos, total, cliente, idcliente, pedidoFabricacion } = body;
 
     if (!fecha?.trim()) {
       return NextResponse.json(
@@ -53,18 +53,20 @@ export async function POST(request: Request) {
     const tot = Number(total) ?? arts.reduce((s: number, a: { total?: number }) => s + (Number(a?.total) || 0), 0);
 
     const descontados: { id: string; cant: number }[] = [];
-    try {
-      for (const a of arts) {
-        const idArt = a?.idarticulo != null ? String(a.idarticulo).trim() : "";
-        const cant = Number(a?.cantidad) || 0;
-        if (idArt && cant > 0) {
-          await descontarStockArticulo(idArt, cant);
-          descontados.push({ id: idArt, cant });
+    if (!pedidoFabricacion) {
+      try {
+        for (const a of arts) {
+          const idArt = a?.idarticulo != null ? String(a.idarticulo).trim() : "";
+          const cant = Number(a?.cantidad) || 0;
+          if (idArt && cant > 0) {
+            await descontarStockArticulo(idArt, cant);
+            descontados.push({ id: idArt, cant });
+          }
         }
-      }
-    } catch (err) {
+      } catch (err) {
         const msg = err instanceof Error ? err.message : "Error al descontar stock";
         return NextResponse.json({ error: msg }, { status: 400 });
+      }
     }
 
     try {
@@ -78,10 +80,13 @@ export async function POST(request: Request) {
         })),
         total: tot,
         cliente: cliente != null ? String(cliente).trim() : "",
+        idcliente: idcliente != null ? String(idcliente).trim() : "",
       });
     } catch (err) {
-      for (const d of descontados) {
-        await reponerStockArticulo(d.id, d.cant).catch(() => {});
+      if (!pedidoFabricacion) {
+        for (const d of descontados) {
+          await reponerStockArticulo(d.id, d.cant).catch(() => {});
+        }
       }
       throw err;
     }

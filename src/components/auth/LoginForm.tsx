@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, esAdmin } from "@/contexts/AuthContext";
 import FormRegistro from "./FormRegistro";
 
 export default function LoginForm() {
@@ -31,7 +31,8 @@ export default function LoginForm() {
 
       if (res.ok && data.success) {
         login(data.cliente);
-        router.push("/");
+        const destino = esAdmin(data.cliente.email) ? "/" : "/mis-pedidos";
+        router.push(destino);
         router.refresh();
         return;
       }
@@ -55,7 +56,8 @@ export default function LoginForm() {
     login(cliente);
     setMostrarRegistro(false);
     setEmailParaRegistro("");
-    router.push("/");
+    const destino = esAdmin(cliente.email) ? "/" : "/mis-pedidos";
+    router.push(destino);
     router.refresh();
   };
 

@@ -47,9 +47,19 @@ function ModalVerVenta({ venta, onCerrar, onEditar }: ModalVerVentaProps) {
               <span className="font-medium text-slate-800">{venta.cliente || "-"}</span>
             </div>
             <div>
-              <span className="text-slate-500 block">Entregado</span>
-              <span className={`font-medium ${(venta.entregado || "").toLowerCase() === "pendiente" || !venta.entregado ? "text-red-600" : "text-green-600"}`}>
-                {venta.entregado || "Pendiente"}
+              <span className="text-slate-500 block">Estado</span>
+              <span className={`font-medium ${
+                /^\d{4}-\d{2}-\d{2}$/.test((venta.entregado ?? "").trim())
+                  ? "text-green-600"
+                  : (venta.entregado ?? "").toLowerCase() === "pendiente" || !venta.entregado
+                    ? "text-red-600"
+                    : "text-amber-600"
+              }`}>
+                {/^\d{4}-\d{2}-\d{2}$/.test((venta.entregado ?? "").trim())
+                  ? `Entregado - ${(venta.entregado ?? "").trim()}`
+                  : (venta.entregado ?? "").toLowerCase() === "pendiente" || !venta.entregado
+                    ? "Nuevo pedido"
+                    : venta.entregado}
               </span>
             </div>
           </div>
@@ -170,8 +180,9 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
       if (entregado === "pendiente" || !v.entregado) return false;
     }
     if (ocultarEntregadas) {
-      const entregado = (v.entregado ?? "").toLowerCase();
-      if (entregado !== "pendiente" && v.entregado) return false;
+      const ent = (v.entregado ?? "").trim();
+      const esFechaEntregado = /^\d{4}-\d{2}-\d{2}$/.test(ent);
+      if (esFechaEntregado) return false;
     }
     const fechaVenta = (v.fecha || "").trim();
     if (fechaDesde && fechaVenta && fechaVenta < fechaDesde) return false;
@@ -213,7 +224,11 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
       Cliente: v.cliente || "-",
       Artículos: descripcionArticulos(v),
       Total: v.total ?? 0,
-      Entregado: v.entregado ?? "Pendiente",
+      Entregado: /^\d{4}-\d{2}-\d{2}$/.test((v.entregado ?? "").trim())
+        ? `Entregado - ${(v.entregado ?? "").trim()}`
+        : (v.entregado ?? "").toLowerCase() === "pendiente" || !v.entregado
+          ? "Nuevo pedido"
+          : (v.entregado ?? ""),
     }));
 
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -335,7 +350,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
               onChange={(e) => setOcultarPendiente(e.target.checked)}
               className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
             />
-            Ocultar Pendiente
+            Ocultar Nuevo pedido
           </label>
           <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
             <input
@@ -436,8 +451,18 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                         <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-700 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
                           {formatPrecio(v.total ?? 0)}
                         </td>
-                        <td className={`px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis ${(v.entregado ?? "").toLowerCase() === "pendiente" || !v.entregado ? "text-red-600" : "text-green-600"}`}>
-                          {v.entregado ?? "Pendiente"}
+                        <td className={`px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis ${
+                          /^\d{4}-\d{2}-\d{2}$/.test((v.entregado ?? "").trim())
+                            ? "text-green-600"
+                            : (v.entregado ?? "").toLowerCase() === "pendiente" || !v.entregado
+                              ? "text-red-600"
+                              : "text-amber-600"
+                        }`}>
+                          {/^\d{4}-\d{2}-\d{2}$/.test((v.entregado ?? "").trim())
+                            ? `Entregado - ${(v.entregado ?? "").trim()}`
+                            : (v.entregado ?? "").toLowerCase() === "pendiente" || !v.entregado
+                              ? "Nuevo pedido"
+                              : (v.entregado ?? "")}
                         </td>
                         <td className="px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
                           <div className="flex flex-nowrap gap-1">

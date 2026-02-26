@@ -37,7 +37,8 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
   };
   const [fecha, setFecha] = useState(venta?.fecha ?? "");
   const [cliente, setCliente] = useState(venta?.cliente ?? "");
-  const [entregado, setEntregado] = useState("");
+  const [estado, setEstado] = useState<"pendiente" | "en preparacion" | "en reparto" | "entregado">("pendiente");
+  const [fechaEntregado, setFechaEntregado] = useState("");
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [lineas, setLineas] = useState<LineaVenta[]>([]);
   const [cantidadActual, setCantidadActual] = useState("1");
@@ -150,7 +151,20 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
     if (venta) {
       const id = requestAnimationFrame(() => setFecha(fechaHoy()));
       setCliente(venta.cliente ?? "");
-      setEntregado(esFechaValida(venta.entregado ?? "") ? (venta.entregado ?? "").trim() : "");
+      const ent = (venta.entregado ?? "").trim().toLowerCase();
+      if (esFechaValida(venta.entregado ?? "")) {
+        setEstado("entregado");
+        setFechaEntregado((venta.entregado ?? "").trim());
+      } else if (ent === "en preparacion" || ent === "en preparación") {
+        setEstado("en preparacion");
+        setFechaEntregado("");
+      } else if (ent === "en reparto") {
+        setEstado("en reparto");
+        setFechaEntregado("");
+      } else {
+        setEstado("pendiente");
+        setFechaEntregado("");
+      }
       if (venta.articulos && venta.articulos.length > 0) {
         setLineas(
           venta.articulos.map((a) => ({
@@ -165,7 +179,8 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
     } else {
       const id = requestAnimationFrame(() => setFecha(fechaHoy()));
       setCliente("");
-      setEntregado("");
+      setEstado("pendiente");
+      setFechaEntregado("");
       setLineas([]);
       setCodbarraBuscar("");
       setArticuloEncontrado(null);
@@ -194,14 +209,16 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
 
     const fechaEnviar = fecha.trim() || fechaHoy();
 
+    const clienteSel = clientes.find((c) => c.nombre === cliente);
     const payload: Record<string, unknown> = {
       fecha: fechaEnviar,
       cliente: cliente.trim(),
+      idcliente: clienteSel?.idcliente ?? "",
       articulos,
       total: totalVenta,
     };
     if (venta) {
-      payload.entregado = entregado.trim() || "pendiente";
+      payload.entregado = estado === "entregado" ? fechaEntregado.trim() || "pendiente" : estado;
     }
 
     try {
@@ -264,30 +281,45 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
             </div>
           </div>
 
-          <div>
-            <label htmlFor="entregado" className="mb-1 block text-sm font-medium text-slate-700">
-              Entregado
-            </label>
-            {venta ? (
-              <input
-                id="entregado"
-                name="entregado"
-                type="date"
-                value={entregado}
-                onChange={(e) => setEntregado(e.target.value)}
+          {venta && (
+            <div>
+              <label htmlFor="estado" className="mb-1 block text-sm font-medium text-slate-700">
+                Estado
+              </label>
+              <select
+                id="estado"
+                name="estado"
+                value={estado}
+                onChange={(e) => setEstado(e.target.value as typeof estado)}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
-              />
-            ) : (
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-red-600 font-medium">
-                Pendiente
-              </div>
-            )}
-            {venta && (
-              <p className="mt-1 text-xs text-slate-500">
-                Ingrese la fecha cuando se entregue el producto. Dejar vacío = pendiente.
-              </p>
-            )}
-          </div>
+              >
+                <option value="pendiente">Nuevo pedido</option>
+                <option value="en preparacion">En preparación</option>
+                <option value="en reparto">En reparto</option>
+                <option value="entregado">Entregado</option>
+              </select>
+              {estado === "entregado" && (
+                <div className="mt-2">
+                  <label htmlFor="fechaEntregado" className="mb-1 block text-sm font-medium text-slate-700">
+                    Fecha de entrega
+                  </label>
+                  <input
+                    id="fechaEntregado"
+                    name="fechaEntregado"
+                    type="date"
+                    value={fechaEntregado}
+                    onChange={(e) => setFechaEntregado(e.target.value)}
+                    className={`w-full rounded-lg border px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 ${
+                      fechaEntregado ? "border-green-500 bg-green-50 text-green-800 font-medium" : "border-slate-300 text-slate-800"
+                    }`}
+                  />
+                  {fechaEntregado && (
+                    <p className="mt-1 text-xs text-green-600">Fecha registrada</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div>
             <label htmlFor="cliente" className="mb-1 block text-sm font-medium text-slate-700">

@@ -25,6 +25,7 @@ export interface Venta {
   entregado?: string;
   total: number;
   cliente?: string;
+  idcliente?: string;
 }
 
 /** Venta tal como se muestra en la lista. nombre puede ser JSON (array) o string legacy */
@@ -725,6 +726,7 @@ export async function eliminarVenta(idventa: string): Promise<void> {
 /** Payload para actualizar venta: articulos (nuevo formato) o nombre/cantidad/total (legacy) */
 export type VentaUpdatePayload = Partial<Omit<VentaList, 'idventa'>> & {
   articulos?: ArticuloVenta[];
+  idcliente?: string;
 };
 
 /**
@@ -789,6 +791,7 @@ export async function actualizarVenta(
   }
 
   const entregado = venta.entregado != null ? String(venta.entregado).trim() : (actual.entregado ?? '');
+  const idcliente = venta.idcliente != null ? String(venta.idcliente).trim() : '';
 
   const nueva = {
     idventa: actual.idventa,
@@ -799,10 +802,11 @@ export async function actualizarVenta(
     precioUnitario: 0,
     total,
     entregado: entregado || 'pendiente',
+    idcliente,
   };
 
-  const range = `'ventas'!A${sheetRow}:H${sheetRow}`;
-  const values = [[nueva.idventa, nueva.fecha, nueva.cliente, nueva.nombre, nueva.cantidad, nueva.precioUnitario, nueva.total, nueva.entregado]];
+  const range = `'ventas'!A${sheetRow}:I${sheetRow}`;
+  const values = [[nueva.idventa, nueva.fecha, nueva.cliente, nueva.nombre, nueva.cantidad, nueva.precioUnitario, nueva.total, nueva.entregado, nueva.idcliente]];
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
@@ -838,6 +842,7 @@ export async function insertarVenta(venta: Venta): Promise<void> {
   const nombreJson = JSON.stringify(venta.articulos);
   const total = venta.total;
   const cliente = venta.cliente?.trim() ?? '';
+  const idcliente = venta.idcliente?.trim() ?? '';
 
   const values = [
     [
@@ -849,12 +854,13 @@ export async function insertarVenta(venta: Venta): Promise<void> {
       0, // precioUnitario (legacy)
       total,
       "pendiente", // entregado: pendiente hasta que se registre la entrega
+      idcliente, // idcliente al final
     ],
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "'ventas'!A:H",
+    range: "'ventas'!A:I",
     valueInputOption: 'USER_ENTERED',
     insertDataOption: 'INSERT_ROWS',
     requestBody: {

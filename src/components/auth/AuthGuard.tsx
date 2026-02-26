@@ -5,10 +5,23 @@ import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import HeaderAuth from "./HeaderAuth";
 
+const RUTAS_ADMIN = [
+  "/",
+  "/listaarticulos",
+  "/listaventas",
+  "/listaclientes",
+  "/listacompras",
+  "/listaproveedores",
+];
+
+function esRutaAdmin(pathname: string): boolean {
+  return RUTAS_ADMIN.some((r) => pathname === r || pathname.startsWith(r + "/"));
+}
+
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { estaAutenticado, cargando } = useAuth();
+  const { estaAutenticado, cargando, isAdmin } = useAuth();
 
   const esRutaLogin = pathname === "/login";
 
@@ -17,8 +30,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (esRutaLogin) return;
     if (!estaAutenticado) {
       router.replace("/login");
+      return;
     }
-  }, [cargando, estaAutenticado, esRutaLogin, router]);
+    if (!isAdmin && esRutaAdmin(pathname)) {
+      router.replace("/mis-pedidos");
+    }
+  }, [cargando, estaAutenticado, isAdmin, esRutaLogin, pathname, router]);
 
   if (cargando) {
     return (
@@ -40,11 +57,21 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
+  if (!isAdmin && esRutaAdmin(pathname)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100">
+        <div className="text-slate-600">Redirigiendo a tus pedidos…</div>
+      </div>
+    );
+  }
+
+  const linkInicio = isAdmin ? "/" : "/mis-pedidos";
+
   return (
     <div className="flex min-h-screen flex-col">
       <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-          <a href="/" className="text-lg font-semibold text-slate-800">
+          <a href={linkInicio} className="text-lg font-semibold text-slate-800">
             Bokadillo
           </a>
           <HeaderAuth />

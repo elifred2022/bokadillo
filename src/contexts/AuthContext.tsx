@@ -9,10 +9,16 @@ import {
   type ReactNode,
 } from "react";
 
+const ADMIN_EMAIL = "elifredmason@gmail.com";
+
 export interface UsuarioAuth {
   idcliente: string;
   nombre: string;
   email: string;
+}
+
+export function esAdmin(email: string): boolean {
+  return email?.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
 }
 
 interface AuthContextType {
@@ -21,6 +27,7 @@ interface AuthContextType {
   login: (u: UsuarioAuth) => void;
   logout: () => void;
   estaAutenticado: boolean;
+  isAdmin: boolean;
 }
 
 const STORAGE_KEY = "bokadillo_usuario";
@@ -65,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         estaAutenticado: !!usuario,
+        isAdmin: usuario ? esAdmin(usuario.email) : false,
       }}
     >
       {children}
