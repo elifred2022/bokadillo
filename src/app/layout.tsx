@@ -15,8 +15,49 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bokadillo",
+  metadataBase: new URL("https://bokadillo.vercel.app"),
+  title: {
+    default: "Bokadillo",
+    template: "%s | Bokadillo",
+  },
   description: "App de gestión y almacén de productos",
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/logo.png", type: "image/png", sizes: "any" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Bokadillo",
+  },
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: "https://bokadillo.vercel.app",
+    siteName: "Bokadillo",
+    title: "Bokadillo",
+    description: "App de gestión y almacén de productos",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Bokadillos - Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Bokadillo",
+    description: "App de gestión y almacén de productos",
+    images: ["/logo.png"],
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
