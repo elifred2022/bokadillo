@@ -39,7 +39,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (cargando) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-screen items-center justify-center bg-red-50/80">
         <div className="text-slate-600">Cargando…</div>
       </div>
     );
@@ -51,7 +51,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!estaAutenticado) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-screen items-center justify-center bg-red-50/80">
         <div className="text-slate-600">Redirigiendo al login…</div>
       </div>
     );
@@ -59,7 +59,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!isAdmin && esRutaAdmin(pathname)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100">
+      <div className="flex min-h-screen items-center justify-center bg-red-50/80">
         <div className="text-slate-600">Redirigiendo a tus pedidos…</div>
       </div>
     );

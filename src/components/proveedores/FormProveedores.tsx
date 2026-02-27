@@ -181,7 +181,7 @@ export default function FormProveedores({
               className={`w-full rounded-lg border px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 ${
                 codigoExiste
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                  : "border-slate-300 focus:border-red-500 focus:ring-red-500"
               }`}
               placeholder="Ej: PROV001"
             />
@@ -209,7 +209,7 @@ export default function FormProveedores({
               required
               value={formData.nombre}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Nombre del proveedor"
             />
           </div>
@@ -227,7 +227,7 @@ export default function FormProveedores({
               type="text"
               value={formData.telefono}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Ej: +54 11 1234-5678"
             />
           </div>
@@ -245,7 +245,7 @@ export default function FormProveedores({
               type="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="correo@ejemplo.com"
             />
           </div>
@@ -263,7 +263,7 @@ export default function FormProveedores({
               rows={2}
               value={formData.direccion}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Dirección opcional"
             />
           </div>
@@ -281,7 +281,7 @@ export default function FormProveedores({
               type="text"
               value={formData.contacto}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Persona de contacto"
             />
           </div>

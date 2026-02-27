@@ -24,10 +24,10 @@ export default function ListVentasLoader() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-100 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-red-50/80 p-6 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-2">{error}</p>
-          <a href="/" className="text-sky-600 underline">
+          <a href="/" className="text-red-600 underline">
             Volver al inicio
           </a>
         </div>
@@ -37,7 +37,7 @@ export default function ListVentasLoader() {
 
   if (ventas === null) {
     return (
-      <div className="min-h-screen bg-slate-100 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-red-50/80 p-6 flex items-center justify-center">
         <p className="text-slate-500">Cargando ventas...</p>
       </div>
     );

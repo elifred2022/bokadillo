@@ -277,7 +277,7 @@ export default function FormCompras({
               required
               value={fecha ?? ""}
               onChange={(e) => setFecha(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
             />
           </div>
 
@@ -291,7 +291,7 @@ export default function FormCompras({
               type="text"
               value={factura}
               onChange={(e) => setFactura(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Número de factura"
             />
           </div>
@@ -309,7 +309,7 @@ export default function FormCompras({
               required
               value={proveedor}
               onChange={(e) => setProveedor(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
             >
               <option value="">Seleccionar proveedor</option>
               {proveedores.map((p) => (
@@ -337,7 +337,7 @@ export default function FormCompras({
                   e.key === "Enter" &&
                   (e.preventDefault(), handleBuscarPorCodbarra())
                 }
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                 placeholder="Escanear o tipear código"
               />
               <button
@@ -352,11 +352,11 @@ export default function FormCompras({
           </div>
 
           {articuloEncontrado && (
-            <div className="rounded-lg bg-sky-50 border border-sky-200 px-3 py-3">
-              <p className="text-sm font-medium text-sky-800 mb-1">
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-3">
+              <p className="text-sm font-medium text-red-800 mb-1">
                 {articuloEncontrado.nombre}
               </p>
-              <p className="text-xs text-sky-700 mb-2">
+              <p className="text-xs text-red-700 mb-2">
                 Precio actual: {formatPrecio(articuloEncontrado.precio)} ·
                 Stock: {articuloEncontrado.stock}
               </p>

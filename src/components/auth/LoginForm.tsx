@@ -63,7 +63,7 @@ export default function LoginForm() {
 
   return (
     <>
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-red-50/80 p-4">
         <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8">
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-semibold text-slate-800">Bokadillo</h1>
@@ -93,7 +93,7 @@ export default function LoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                 placeholder="correo@ejemplo.com"
               />
             </div>
@@ -112,7 +112,7 @@ export default function LoginForm() {
                 required
                 value={clave}
                 onChange={(e) => setClave(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                 placeholder="Tu contraseña"
               />
             </div>

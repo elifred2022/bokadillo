@@ -22,7 +22,7 @@ function ModalVerCompra({ compra, onCerrar, onEditar }: ModalVerCompraProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
       <div className="w-full max-w-lg rounded-xl bg-white shadow-xl my-8 overflow-hidden">
-        <div className="bg-sky-600 px-4 py-3 flex items-center justify-between">
+        <div className="bg-red-600 px-4 py-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">
             Detalle de compra #{compra.idcompra}
           </h2>
@@ -93,7 +93,7 @@ function ModalVerCompra({ compra, onCerrar, onEditar }: ModalVerCompraProps) {
 
           <div className="flex justify-between items-center pt-3 border-t border-slate-200">
             <span className="text-base font-semibold text-slate-700">Total de la compra</span>
-            <span className="text-xl font-bold text-sky-600">
+            <span className="text-xl font-bold text-red-600">
               {formatPrecio(compra.total)}
             </span>
           </div>
@@ -102,7 +102,7 @@ function ModalVerCompra({ compra, onCerrar, onEditar }: ModalVerCompraProps) {
             <button type="button" onClick={onCerrar} className="btn-secondary flex-1">
               Cerrar
             </button>
-            <button type="button" onClick={onEditar} className="btn-primary flex-1">
+            <button type="button" onClick={onEditar} className="flex-1 rounded-full px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors">
               Editar compra
             </button>
           </div>
@@ -264,7 +264,7 @@ export default function ListCompras({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-red-50/80 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-6xl">
         <Link href="/" className="btn-secondary mb-4 sm:mb-6 w-fit">
           ← Volver al inicio
@@ -306,7 +306,7 @@ export default function ListCompras({
               type="date"
               value={fechaDesde}
               onChange={(e) => setFechaDesde(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Desde"
             />
             <span className="text-slate-500">—</span>
@@ -314,7 +314,7 @@ export default function ListCompras({
               type="date"
               value={fechaHasta}
               onChange={(e) => setFechaHasta(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Hasta"
             />
             {(fechaDesde || fechaHasta) && (
@@ -332,14 +332,14 @@ export default function ListCompras({
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
             placeholder="Filtrar por id, fecha, proveedor, factura, artículos..."
-            className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 sm:max-w-xs"
+            className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 sm:max-w-xs"
           />
           <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
             <input
               type="checkbox"
               checked={ocultarSinFactura}
               onChange={(e) => setOcultarSinFactura(e.target.checked)}
-              className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              className="rounded border-slate-300 text-red-600 focus:ring-red-500"
             />
             Ocultar sin factura
           </label>
@@ -348,18 +348,18 @@ export default function ListCompras({
               type="checkbox"
               checked={ocultarConFactura}
               onChange={(e) => setOcultarConFactura(e.target.checked)}
-              className="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+              className="rounded border-slate-300 text-red-600 focus:ring-red-500"
             />
             Ocultar con factura
           </label>
         </div>
-        <div className="mb-4 rounded-lg bg-sky-50 border border-sky-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-          <span className="text-sm font-medium text-sky-800">
+        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm font-medium text-red-800">
             {comprasFiltradas.length} compra{comprasFiltradas.length !== 1 ? "s" : ""} mostrada{comprasFiltradas.length !== 1 ? "s" : ""}
             {(fechaDesde || fechaHasta || filtro.trim() || ocultarSinFactura || ocultarConFactura) && " (filtradas)"}
           </span>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-lg font-bold text-sky-700">
+            <span className="text-lg font-bold text-red-700">
               Total: {formatPrecio(totalComprasFiltradas)}
             </span>
             <button
@@ -375,14 +375,14 @@ export default function ListCompras({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[500px]">
               <thead>
-                <tr className="bg-sky-100">
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">ID Compra</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Fecha</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Proveedor</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Factura</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Artículos</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Total</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Act</th>
+                <tr className="bg-red-100">
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">ID Compra</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Fecha</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Proveedor</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Factura</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Artículos</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Total</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Act</th>
                 </tr>
               </thead>
               <tbody>
@@ -411,7 +411,7 @@ export default function ListCompras({
                     return (
                       <tr
                         key={c.idcompra || `compra-${i}`}
-                        className="border-t border-slate-100 bg-white transition-colors hover:bg-sky-50/50"
+                        className="border-t border-slate-100 bg-white transition-colors hover:bg-red-50/50"
                       >
                         <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.idcompra}</td>
                         <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.fecha}</td>
@@ -431,7 +431,7 @@ export default function ListCompras({
                             <button
                               type="button"
                               onClick={() => abrirEditar(c)}
-                              className="rounded-lg bg-sky-50 px-2 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100"
+                              className="rounded-lg bg-green-50 px-2 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
                             >
                               Editar
                             </button>

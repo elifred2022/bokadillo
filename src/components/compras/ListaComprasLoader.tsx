@@ -35,10 +35,10 @@ export default function ListaComprasLoader() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
+      <div className="flex min-h-screen items-center justify-center bg-red-50/80 p-6">
         <div className="text-center">
           <p className="mb-2 text-red-600">{error}</p>
-          <a href="/" className="text-sky-600 underline">
+          <a href="/" className="text-red-600 underline">
             Volver al inicio
           </a>
         </div>
@@ -48,7 +48,7 @@ export default function ListaComprasLoader() {
 
   if (compras === null || proveedores === null) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
+      <div className="flex min-h-screen items-center justify-center bg-red-50/80 p-6">
         <p className="text-slate-500">Cargando compras...</p>
       </div>
     );

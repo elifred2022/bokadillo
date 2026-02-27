@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f1f5f9;
+  --background: #fef2f2;
   --foreground: #1e293b;
-  --primary: #0ea5e9;
-  --primary-hover: #0284c7;
-  --primary-light: #e0f2fe;
+  --primary: #dc2626;
+  --primary-hover: #b91c1c;
+  --primary-light: #fef2f2;
 }
 
 @theme inline {
@@ -29,12 +29,12 @@ body {
   padding: 0 1.25rem;
   font-weight: 500;
   color: white;
-  background-color: #0ea5e9;
+  background-color: #dc2626;
   border-radius: 9999px;
   transition: background-color 0.2s, transform 0.1s;
 }
 .btn-primary:hover {
-  background-color: #0284c7;
+  background-color: #b91c1c;
 }
 .btn-primary:active {
   transform: scale(0.98);
@@ -47,13 +47,13 @@ body {
   height: 3rem;
   padding: 0 1.25rem;
   font-weight: 500;
-  color: #0c4a6e;
-  background-color: #e0f2fe;
-  border: 1px solid #bae6fd;
+  color: #991b1b;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
   border-radius: 9999px;
   transition: background-color 0.2s, color 0.2s;
 }
 .btn-secondary:hover {
-  background-color: #bae6fd;
-  color: #0369a1;
+  background-color: #fecaca;
+  color: #b91c1c;
 }

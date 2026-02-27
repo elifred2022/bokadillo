@@ -164,7 +164,7 @@ export default function FormCliente({
               required
               value={formData.nombre}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Nombre del cliente"
             />
           </div>
@@ -204,7 +204,7 @@ export default function FormCliente({
               type="text"
               value={formData.telefono}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Ej: +54 11 1234-5678"
             />
           </div>
@@ -222,7 +222,7 @@ export default function FormCliente({
               type="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="correo@ejemplo.com"
             />
           </div>
@@ -240,7 +240,7 @@ export default function FormCliente({
               rows={2}
               value={formData.direccion}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Dirección opcional"
             />
           </div>

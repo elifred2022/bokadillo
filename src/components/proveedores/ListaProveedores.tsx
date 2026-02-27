@@ -77,7 +77,7 @@ export default function ListaProveedores({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-red-50/80 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-5xl">
         <Link href="/" className="btn-secondary mb-4 sm:mb-6 w-fit">
           ← Volver al inicio
@@ -107,21 +107,21 @@ export default function ListaProveedores({
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
             placeholder="Filtrar por ID, nombre, teléfono..."
-            className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
         </div>
         <div className="rounded-xl shadow-sm border border-slate-200 overflow-hidden bg-white">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[400px]">
               <thead>
-                <tr className="bg-sky-100">
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">ID Proveedor</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Nombre</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Telefono</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Email</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Direccion</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Contacto</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">Act</th>
+                <tr className="bg-red-100">
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">ID Proveedor</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Nombre</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Telefono</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Email</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Direccion</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Contacto</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Act</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,7 +140,7 @@ export default function ListaProveedores({
                   proveedoresFiltrados.map((prov, i) => (
                     <tr
                       key={prov.idproveedor || `prov-${i}`}
-                      className="border-t border-slate-100 bg-white hover:bg-sky-50/50 transition-colors"
+                      className="border-t border-slate-100 bg-white hover:bg-red-50/50 transition-colors"
                     >
                       <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{prov.idproveedor}</td>
                       <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-medium text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis">{prov.nombre}</td>
@@ -153,7 +153,7 @@ export default function ListaProveedores({
                           <button
                             type="button"
                             onClick={() => abrirEditar(prov)}
-                            className="rounded-lg bg-sky-50 px-2 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100"
+                            className="rounded-lg bg-green-50 px-2 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
                           >
                             Editar
                           </button>

@@ -206,7 +206,7 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
               className={`w-full rounded-lg border px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 ${
                 codbarraExiste
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                  : "border-slate-300 focus:border-red-500 focus:ring-red-500"
               }`}
               placeholder="Ej: 7891234567890"
             />
@@ -237,7 +237,7 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
               className={`w-full rounded-lg border px-3 py-2 text-slate-800 focus:outline-none focus:ring-1 ${
                 codigoExiste
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                  : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                  : "border-slate-300 focus:border-red-500 focus:ring-red-500"
               }`}
               placeholder="Ej: ART001"
             />
@@ -265,7 +265,7 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
               required
               value={formData.nombre}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Nombre del artículo"
             />
           </div>
@@ -283,7 +283,7 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
               rows={2}
               value={formData.descripcion}
               onChange={handleChange}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               placeholder="Descripción opcional"
             />
           </div>
@@ -296,7 +296,7 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
               >
                 Precio ($)
               </label>
-              <div className="flex items-center rounded-lg border border-slate-300 focus-within:border-sky-500 focus-within:ring-1 focus-within:ring-sky-500">
+              <div className="flex items-center rounded-lg border border-slate-300 focus-within:border-red-500 focus-within:ring-1 focus-within:ring-red-500">
                 <span className="pl-3 text-slate-600">$</span>
                 <input
                   id="precio"
@@ -325,7 +325,7 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
                 min="0"
                 value={formData.stock}
                 onChange={handleChange}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                 placeholder="0"
               />
             </div>

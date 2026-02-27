@@ -17,7 +17,7 @@ function ModalVerPedido({ venta, onCerrar }: ModalVerPedidoProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
       <div className="w-full max-w-lg rounded-xl bg-white shadow-xl my-8 overflow-hidden">
-        <div className="bg-sky-600 px-4 py-3 flex items-center justify-between">
+        <div className="bg-red-600 px-4 py-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">
             Detalle del pedido #{venta.idventa}
           </h2>
@@ -99,7 +99,7 @@ function ModalVerPedido({ venta, onCerrar }: ModalVerPedidoProps) {
 
           <div className="flex justify-between items-center pt-3 border-t border-slate-200">
             <span className="text-base font-semibold text-slate-700">Total</span>
-            <span className="text-xl font-bold text-sky-600">
+            <span className="text-xl font-bold text-red-600">
               {formatPrecio(venta.total)}
             </span>
           </div>
@@ -132,7 +132,7 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
   const totalPedidos = ventasOrdenadas.reduce((sum, v) => sum + (v.total ?? 0), 0);
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-red-50/80 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-xl sm:text-2xl font-semibold text-slate-800">
@@ -161,11 +161,11 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
           />
         )}
 
-        <div className="mb-4 rounded-lg bg-sky-50 border border-sky-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-          <span className="text-sm font-medium text-sky-800">
+        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm font-medium text-red-800">
             {ventasOrdenadas.length} pedido{ventasOrdenadas.length !== 1 ? "s" : ""}
           </span>
-          <span className="text-lg font-bold text-sky-700">
+          <span className="text-lg font-bold text-red-700">
             Total: {formatPrecio(totalPedidos)}
           </span>
         </div>
@@ -174,23 +174,23 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[400px]">
               <thead>
-                <tr className="bg-sky-100">
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">
+                <tr className="bg-red-100">
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
                     ID Pedido
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
                     Fecha
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
                     Artículos
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
                     Total
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
                     Estado
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-sky-800 whitespace-nowrap">
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
                     Ver
                   </th>
                 </tr>
@@ -219,7 +219,7 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
                     return (
                       <tr
                         key={v.idventa || `venta-${i}`}
-                        className="border-t border-slate-100 bg-white hover:bg-sky-50/50 transition-colors"
+                        className="border-t border-slate-100 bg-white hover:bg-red-50/50 transition-colors"
                       >
                         <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap">
                           {v.idventa}
@@ -255,7 +255,7 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
                           <button
                             type="button"
                             onClick={() => setVentaViendo(v)}
-                            className="rounded-lg bg-sky-50 px-2 py-1.5 text-xs font-medium text-sky-700 hover:bg-sky-100"
+                            className="rounded-lg bg-red-50 px-2 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
                           >
                             Ver detalle
                           </button>

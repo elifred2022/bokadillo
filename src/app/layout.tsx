@@ -23,8 +23,8 @@ export const metadata: Metadata = {
   description: "App de gestión y almacén de productos",
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
       { url: "/icon.png", type: "image/png" },
-      { url: "/logo.png", type: "image/png", sizes: "any" },
     ],
     apple: [
       { url: "/apple-icon.png", type: "image/png" },

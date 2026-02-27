@@ -37,10 +37,10 @@ export default function MisPedidosLoader() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-100 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-red-50/80 p-6 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-2">{error}</p>
-          <a href="/mis-pedidos" className="text-sky-600 underline">
+          <a href="/mis-pedidos" className="text-red-600 underline">
             Reintentar
           </a>
         </div>
@@ -50,7 +50,7 @@ export default function MisPedidosLoader() {
 
   if (ventas === null) {
     return (
-      <div className="min-h-screen bg-slate-100 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-red-50/80 p-6 flex items-center justify-center">
         <p className="text-slate-500">Cargando tus pedidos...</p>
       </div>
     );
