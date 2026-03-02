@@ -118,6 +118,7 @@ export default function ListClientes({
                   <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Fecha creación</th>
                   <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Teléfono</th>
                   <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Email</th>
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Direccion</th>
                   <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Act</th>
                 </tr>
               </thead>
@@ -144,6 +145,7 @@ export default function ListClientes({
                       <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{cli.fechaCreacion || "—"}</td>
                       <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{cli.telefono ?? "—"}</td>
                       <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{cli.email ?? "—"}</td>
+                      <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{cli.direccion ?? "—"}</td>
                       <td className="px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
                         <div className="flex flex-nowrap gap-1">
                           <button
