@@ -124,11 +124,21 @@ export default function LoginForm() {
             >
               {enviando ? "Iniciando sesión…" : "Iniciar sesión"}
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEmailParaRegistro(email.trim());
+                setMostrarRegistro(true);
+              }}
+              className="btn-secondary w-full"
+            >
+              Registrarse
+            </button>
           </form>
 
           <p className="mt-4 text-center text-sm text-slate-600">
-            Si no tienes cuenta, introduce tu email y contraseña. Si el correo no
-            está registrado, se te pedirá completar el registro.
+            ¿No tienes cuenta? Haz clic en Registrarse para crear una.
           </p>
         </div>
       </div>
