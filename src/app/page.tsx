@@ -13,28 +13,13 @@ export default function Home() {
             App de gestión y almacén de productos
             </p>
           </div>
-          <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
-            <Link
-              href="/listaarticulos"
-              className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
-            >
-              Modulo artículos
-            </Link>
-          </div>
+         
           <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
             <Link
               href="/listaventas"
               className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
             >
               Modulo ventas
-            </Link>
-          </div>
-          <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
-            <Link
-              href="/listaproveedores"
-              className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
-            >
-              Módulo proveedores
             </Link>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
@@ -53,6 +38,32 @@ export default function Home() {
               Módulo clientes
             </Link>
           </div>
+          <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
+            <Link
+              href="/listaarticulos"
+              className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
+            >
+              Modulo artículos
+            </Link>
+          </div>
+          <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
+            <Link
+              href="/listaproveedores"
+              className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
+            >
+              Módulo proveedores
+            </Link>
+          </div>
+          <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
+            <Link
+              href="/listaindicadores"
+              className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
+            >
+              Indicadores
+            </Link>
+          </div>
+          
+         
         </div>
       </main>
     </div>

@@ -12,6 +12,7 @@ const RUTAS_ADMIN = [
   "/listaclientes",
   "/listacompras",
   "/listaproveedores",
+  "/listaindicadores",
 ];
 
 function esRutaAdmin(pathname: string): boolean {

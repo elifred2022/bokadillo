@@ -6,17 +6,19 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const codbarra = searchParams.get("codbarra")?.trim();
     const id = searchParams.get("id")?.trim();
+    const nombre = searchParams.get("nombre")?.trim();
 
-    if (!codbarra && !id) {
+    if (!codbarra && !id && !nombre) {
       return NextResponse.json(
-        { error: "Debe proporcionar codbarra o id" },
+        { error: "Debe proporcionar codbarra, id o nombre" },
         { status: 400 }
       );
     }
 
     const articulos = await getArticulos();
 
-    const encontrado = articulos.find((a) => {
+    // Prioridad: codbarra exacto > id exacto > nombre (contiene)
+    let encontrado = articulos.find((a) => {
       if (codbarra && a.codbarra.trim().toLowerCase() === codbarra.toLowerCase()) {
         return true;
       }
@@ -25,6 +27,14 @@ export async function GET(request: Request) {
       }
       return false;
     });
+
+    if (!encontrado && nombre) {
+      const nombreLower = nombre.toLowerCase();
+      const porNombre = articulos.filter((a) =>
+        (a.nombre ?? "").toLowerCase().includes(nombreLower)
+      );
+      encontrado = porNombre[0] ?? null;
+    }
 
     if (!encontrado) {
       return NextResponse.json({ articulo: null }, { status: 200 });

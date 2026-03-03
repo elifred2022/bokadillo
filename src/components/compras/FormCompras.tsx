@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { CompraList, ArticuloCompra, Proveedor } from "@/lib/google-sheets";
+import type { CompraList, ArticuloCompra, Proveedor, Articulo } from "@/lib/google-sheets";
 import { formatPrecio } from "@/lib/formato";
 
 interface ArticuloEncontrado {
@@ -35,6 +35,7 @@ export default function FormCompras({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
   const [codbarraBuscar, setCodbarraBuscar] = useState("");
+  const [nombreBuscar, setNombreBuscar] = useState("");
   const [buscando, setBuscando] = useState(false);
   const [articuloEncontrado, setArticuloEncontrado] =
     useState<ArticuloEncontrado | null>(null);
@@ -42,11 +43,20 @@ export default function FormCompras({
   const [fecha, setFecha] = useState(compra?.fecha ?? fechaHoy());
   const [proveedor, setProveedor] = useState(compra?.proveedor ?? "");
   const [factura, setFactura] = useState(compra?.factura ?? "");
+  const [articulos, setArticulos] = useState<Articulo[]>([]);
   const [lineas, setLineas] = useState<LineaCompra[]>([]);
   const [cantidadActual, setCantidadActual] = useState("1");
   const [precioActual, setPrecioActual] = useState("");
 
-  const buscarArticulo = useCallback(async (codbarra?: string, id?: string) => {
+  const articulosFiltrados = useMemo(() => {
+    const t = nombreBuscar.trim().toLowerCase();
+    if (!t) return [];
+    return articulos
+      .filter((a) => (a.nombre ?? "").toLowerCase().includes(t))
+      .slice(0, 10);
+  }, [articulos, nombreBuscar]);
+
+  const buscarPorCodigo = useCallback(async (codbarra?: string, id?: string) => {
     if ((!codbarra || !codbarra.trim()) && (!id || !id.trim())) return null;
     setBuscando(true);
     try {
@@ -61,6 +71,20 @@ export default function FormCompras({
     } finally {
       setBuscando(false);
     }
+  }, []);
+
+  const seleccionarArticuloPorNombre = useCallback((art: Articulo) => {
+    const encontrado: ArticuloEncontrado = {
+      id: art.idarticulo,
+      idarticulo: art.idarticulo,
+      codbarra: art.codbarra ?? "",
+      nombre: art.nombre ?? "",
+      precio: art.precio ?? 0,
+      stock: art.stock ?? 0,
+    };
+    setArticuloEncontrado(encontrado);
+    setPrecioActual((art.precio ?? 0).toString());
+    setNombreBuscar("");
   }, []);
 
   const agregarLinea = useCallback(
@@ -122,11 +146,11 @@ export default function FormCompras({
     []
   );
 
-  const handleBuscarPorCodbarra = async () => {
+  const handleBuscarPorCodigo = async () => {
     const cod = codbarraBuscar.trim();
     if (!cod) return;
     setError("");
-    const art = await buscarArticulo(cod, cod);
+    const art = await buscarPorCodigo(cod, cod);
     if (art) {
       setArticuloEncontrado(art);
       setPrecioActual(art.precio?.toString() ?? "");
@@ -173,9 +197,17 @@ export default function FormCompras({
       setFactura("");
       setLineas([]);
       setCodbarraBuscar("");
+      setNombreBuscar("");
       setArticuloEncontrado(null);
     }
   }, [compra]);
+
+  useEffect(() => {
+    fetch("/api/articulos", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => setArticulos(data.articulos ?? []))
+      .catch(() => setArticulos([]));
+  }, []);
 
   const totalCompra = lineas.reduce((sum, l) => sum + l.total, 0);
 
@@ -325,7 +357,7 @@ export default function FormCompras({
               htmlFor="codbarra"
               className="mb-1 block text-sm font-medium text-slate-700"
             >
-              Buscar artículo (código de barras o ID)
+              Buscar por código de barras o ID
             </label>
             <div className="flex gap-2">
               <input
@@ -335,20 +367,58 @@ export default function FormCompras({
                 onChange={(e) => setCodbarraBuscar(e.target.value)}
                 onKeyDown={(e) =>
                   e.key === "Enter" &&
-                  (e.preventDefault(), handleBuscarPorCodbarra())
+                  (e.preventDefault(), handleBuscarPorCodigo())
                 }
                 className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                 placeholder="Escanear o tipear código"
               />
               <button
                 type="button"
-                onClick={handleBuscarPorCodbarra}
+                onClick={handleBuscarPorCodigo}
                 disabled={buscando || !codbarraBuscar.trim()}
                 className="btn-primary shrink-0 disabled:opacity-50"
               >
                 {buscando ? "…" : "Buscar"}
               </button>
             </div>
+          </div>
+
+          <div className="relative">
+            <label
+              htmlFor="nombreBuscar"
+              className="mb-1 block text-sm font-medium text-slate-700"
+            >
+              Buscar por nombre
+            </label>
+            <input
+              id="nombreBuscar"
+              type="text"
+              value={nombreBuscar}
+              onChange={(e) => setNombreBuscar(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+              placeholder="Escribir para filtrar artículos…"
+            />
+            {articulosFiltrados.length > 0 && (
+              <ul className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+                {articulosFiltrados.map((art) => (
+                  <li key={art.idarticulo}>
+                    <button
+                      type="button"
+                      onClick={() => seleccionarArticuloPorNombre(art)}
+                      className="w-full px-3 py-2 text-left text-sm text-slate-800 hover:bg-red-50 hover:text-red-800 flex justify-between items-center gap-2"
+                    >
+                      <span className="truncate">{art.nombre}</span>
+                      <span className="text-xs text-slate-500 shrink-0">
+                        {formatPrecio(art.precio ?? 0)} · Stock: {art.stock ?? 0}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {nombreBuscar.trim() && articulosFiltrados.length === 0 && (
+              <p className="mt-1 text-xs text-slate-500">Ningún artículo coincide</p>
+            )}
           </div>
 
           {articuloEncontrado && (
