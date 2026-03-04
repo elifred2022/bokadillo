@@ -10,7 +10,7 @@ export default function Home() {
                Bokadillo
             </h1>
             <p className="max-w-md text-base sm:text-lg leading-7 text-slate-600">
-            App de gestión y almacén de productos
+            App de gestión de negocio
             </p>
           </div>
          
@@ -19,7 +19,7 @@ export default function Home() {
               href="/listaventas"
               className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
             >
-              Modulo ventas
+              Ventas
             </Link>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
@@ -27,7 +27,7 @@ export default function Home() {
               href="/listacompras"
               className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
             >
-              Módulo compras
+              Compras
             </Link>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
@@ -35,7 +35,7 @@ export default function Home() {
               href="/listaclientes"
               className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
             >
-              Módulo clientes
+              Clientes
             </Link>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
@@ -43,7 +43,7 @@ export default function Home() {
               href="/listaarticulos"
               className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
             >
-              Modulo artículos
+              Artículos
             </Link>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
@@ -51,7 +51,7 @@ export default function Home() {
               href="/listaproveedores"
               className="btn-primary w-full sm:w-auto sm:min-w-[180px]"
             >
-              Módulo proveedores
+              Proveedores
             </Link>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row mt-8 pt-8 border-t border-slate-100">
