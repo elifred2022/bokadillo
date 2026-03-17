@@ -44,6 +44,7 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
   const [articulos, setArticulos] = useState<Articulo[]>([]);
   const [lineas, setLineas] = useState<LineaVenta[]>([]);
   const [cantidadActual, setCantidadActual] = useState("1");
+  const [precioActual, setPrecioActual] = useState("");
 
   const articulosFiltrados = useMemo(() => {
     const t = nombreBuscar.trim().toLowerCase();
@@ -80,18 +81,19 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
       stock: art.stock ?? 0,
     };
     setArticuloEncontrado(encontrado);
+    setPrecioActual(String(encontrado.precio ?? 0));
     setNombreBuscar("");
   }, []);
 
-  const agregarLinea = useCallback((art: ArticuloEncontrado, cantidad: number) => {
+  const agregarLinea = useCallback((art: ArticuloEncontrado, cantidad: number, precioUnitario: number) => {
     const idArt = art.idarticulo ?? art.id ?? "";
-    const total = cantidad * art.precio;
+    const total = cantidad * precioUnitario;
     const nueva: LineaVenta = {
       idarticulo: idArt,
       nombre: art.nombre ?? "",
       cantidad,
       total,
-      precioUnitario: art.precio,
+      precioUnitario,
     };
     setLineas((prev) => {
       const existente = prev.find(
@@ -103,7 +105,8 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
             ? {
                 ...l,
                 cantidad: l.cantidad + cantidad,
-                total: (l.cantidad + cantidad) * l.precioUnitario,
+                precioUnitario,
+                total: (l.cantidad + cantidad) * precioUnitario,
               }
             : l
         );
@@ -112,6 +115,7 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
     });
     setArticuloEncontrado(null);
     setCantidadActual("1");
+    setPrecioActual("");
   }, []);
 
   const quitarLinea = useCallback((index: number) => {
@@ -140,6 +144,7 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
     const art = await buscarPorCodigo(cod, cod);
     if (art) {
       setArticuloEncontrado(art);
+      setPrecioActual(String(art.precio ?? 0));
       setCodbarraBuscar("");
     } else {
       setError("No se encontró artículo con ese código de barras o ID");
@@ -149,8 +154,13 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
   const handleAgregarAlCarrito = () => {
     if (!articuloEncontrado) return;
     const cant = parseInt(cantidadActual, 10) || 1;
+    const precio = Number(precioActual);
     if (cant < 1) {
       setError("La cantidad debe ser al menos 1");
+      return;
+    }
+    if (!Number.isFinite(precio) || precio < 0) {
+      setError("El precio debe ser un número válido mayor o igual a 0");
       return;
     }
     if (articuloEncontrado.stock < cant) {
@@ -158,7 +168,7 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
       return;
     }
     setError("");
-    agregarLinea(articuloEncontrado, cant);
+    agregarLinea(articuloEncontrado, cant, precio);
   };
 
   useEffect(() => {
@@ -215,6 +225,7 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
       setCodbarraBuscar("");
       setNombreBuscar("");
       setArticuloEncontrado(null);
+      setPrecioActual("");
       return () => cancelAnimationFrame(id);
     }
   }, [venta]);
@@ -452,6 +463,15 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
                   value={cantidadActual}
                   onChange={(e) => setCantidadActual(e.target.value)}
                   className="w-20 rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={precioActual}
+                  onChange={(e) => setPrecioActual(e.target.value)}
+                  className="w-28 rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+                  placeholder="Precio"
                 />
                 <button
                   type="button"
