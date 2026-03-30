@@ -188,25 +188,35 @@ export default function ListCompras({
   const totalComprasFiltradas = comprasFiltradas.reduce((sum, c) => sum + (c.total ?? 0), 0);
 
   function descargarExcel() {
-    const descripcionArticulos = (c: CompraList) =>
-      c.articulos?.length
-        ? c.articulos
-            .map((a) =>
-              a.cantidad > 0
-                ? `${a.nombre} (${a.cantidad} × ${formatPrecio(a.total / a.cantidad)})`
-                : a.nombre
-            )
-            .join(" · ")
-        : c.articulo || "-";
+    const rows = comprasFiltradas.flatMap((c) => {
+      if (c.articulos?.length) {
+        return c.articulos.map((a) => ({
+          "ID Compra": c.idcompra,
+          Fecha: c.fecha || "",
+          Proveedor: c.proveedor || "-",
+          Factura: c.factura || "-",
+          Artículos: a.nombre,
+          Cantidad: a.cantidad,
+          "Costo unitario": a.cantidad > 0 ? a.total / a.cantidad : 0,
+          "Sub total": a.total,
+          Total: c.total ?? 0,
+        }));
+      }
 
-    const rows = comprasFiltradas.map((c) => ({
-      "ID Compra": c.idcompra,
-      Fecha: c.fecha || "",
-      Proveedor: c.proveedor || "-",
-      Factura: c.factura || "-",
-      Artículos: descripcionArticulos(c),
-      Total: c.total ?? 0,
-    }));
+      return [
+        {
+          "ID Compra": c.idcompra,
+          Fecha: c.fecha || "",
+          Proveedor: c.proveedor || "-",
+          Factura: c.factura || "-",
+          Artículos: c.articulo || "-",
+          Cantidad: 0,
+          "Costo unitario": 0,
+          "Sub total": 0,
+          Total: c.total ?? 0,
+        },
+      ];
+    });
 
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
