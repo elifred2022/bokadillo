@@ -212,29 +212,49 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
   const totalVentasFiltradas = ventasFiltradas.reduce((sum, v) => sum + (v.total ?? 0), 0);
 
   function descargarExcel() {
-    const descripcionArticulos = (v: VentaList) =>
-      v.articulos?.length
-        ? v.articulos
-            .map((a) =>
-              a.cantidad > 0
-                ? `${a.nombre} (${a.cantidad} × ${formatPrecio(a.total / a.cantidad)})`
-                : a.nombre
-            )
-            .join(" · ")
-        : v.nombre || "-";
-
-    const rows = ventasFiltradas.map((v) => ({
-      "ID Venta": v.idventa,
-      Fecha: v.fecha || "",
-      Cliente: v.cliente || "-",
-      Artículos: descripcionArticulos(v),
-      Total: v.total ?? 0,
-      Entregado: /^\d{4}-\d{2}-\d{2}$/.test((v.entregado ?? "").trim())
+    const estadoEntregado = (v: VentaList) =>
+      /^\d{4}-\d{2}-\d{2}$/.test((v.entregado ?? "").trim())
         ? `Entregado - ${(v.entregado ?? "").trim()}`
         : (v.entregado ?? "").toLowerCase() === "pendiente" || !v.entregado
           ? "Nuevo pedido"
-          : (v.entregado ?? ""),
-    }));
+          : (v.entregado ?? "");
+
+    const rows = ventasFiltradas.flatMap((v) => {
+      const base = {
+        "ID Venta": v.idventa,
+        Fecha: v.fecha || "",
+        Cliente: v.cliente || "-",
+        Entregado: estadoEntregado(v),
+      };
+
+      const articulos = v.articulos ?? [];
+      if (articulos.length === 0) {
+        return [
+          {
+            ...base,
+            Artículos: v.nombre || "-",
+            Cantidad: 0,
+            "Precio unitario": 0,
+            Subtotal: 0,
+            Total: v.total ?? 0,
+          },
+        ];
+      }
+
+      return articulos.map((a) => {
+        const cantidad = a.cantidad ?? 0;
+        const precioUnit = cantidad > 0 ? a.total / cantidad : 0;
+        const subtotal = a.total ?? 0;
+        return {
+          ...base,
+          Artículos: a.nombre || "-",
+          Cantidad: cantidad,
+          "Precio unitario": precioUnit,
+          Subtotal: subtotal,
+          Total: v.total ?? 0,
+        };
+      });
+    });
 
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
