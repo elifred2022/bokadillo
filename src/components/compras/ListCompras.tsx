@@ -157,7 +157,10 @@ export default function ListCompras({
     );
   }, [ocultarSinFactura, ocultarConFactura]);
 
+  const hayConsultaFecha = Boolean(fechaDesde.trim() || fechaHasta.trim());
+
   const comprasFiltradas = compras.filter((c) => {
+    if (!hayConsultaFecha) return false;
     if (ocultarSinFactura) {
       if (!c.factura?.trim()) return false;
     }
@@ -188,6 +191,10 @@ export default function ListCompras({
   const totalComprasFiltradas = comprasFiltradas.reduce((sum, c) => sum + (c.total ?? 0), 0);
 
   function descargarExcel() {
+    if (!hayConsultaFecha) {
+      alert("Seleccione al menos una fecha (desde o hasta) para exportar las compras.");
+      return;
+    }
     const rows = comprasFiltradas.flatMap((c) => {
       if (c.articulos?.length) {
         return c.articulos.map((a) => ({
@@ -310,7 +317,8 @@ export default function ListCompras({
           />
         )}
         <div className="mb-4 flex flex-col sm:flex-row gap-4 flex-wrap">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col gap-1">
+            <div className="flex flex-wrap items-center gap-2">
             <label className="text-sm font-medium text-slate-700">Consulta por fecha:</label>
             <input
               type="date"
@@ -333,9 +341,13 @@ export default function ListCompras({
                 onClick={() => { setFechaDesde(""); setFechaHasta(""); }}
                 className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
               >
-                Reset fechas
+                Reset consulta
               </button>
             )}
+            </div>
+            <p className="text-xs text-slate-600 max-w-xl">
+              La tabla solo muestra compras cuando indica al menos una fecha (desde o hasta).
+            </p>
           </div>
           <input
             type="text"
@@ -366,7 +378,10 @@ export default function ListCompras({
         <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
           <span className="text-sm font-medium text-red-800">
             {comprasFiltradas.length} compra{comprasFiltradas.length !== 1 ? "s" : ""} mostrada{comprasFiltradas.length !== 1 ? "s" : ""}
-            {(fechaDesde || fechaHasta || filtro.trim() || ocultarSinFactura || ocultarConFactura) && " (filtradas)"}
+            {!hayConsultaFecha && " — use la consulta por fecha para listar"}
+            {hayConsultaFecha &&
+              (fechaDesde || fechaHasta || filtro.trim() || ocultarSinFactura || ocultarConFactura) &&
+              " (filtradas)"}
           </span>
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-lg font-bold text-red-700">
@@ -375,7 +390,8 @@ export default function ListCompras({
             <button
               type="button"
               onClick={descargarExcel}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+              disabled={!hayConsultaFecha}
+              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-green-600"
             >
               Descargar a Excel
             </button>
@@ -402,9 +418,11 @@ export default function ListCompras({
                       colSpan={7}
                       className="bg-white px-4 py-12 text-center text-slate-500"
                     >
-                      {compras.length === 0
-                        ? "No hay compras disponibles"
-                        : "Ninguna compra coincide con el filtro o rango de fechas"}
+                      {!hayConsultaFecha
+                        ? "Indique al menos una fecha (desde o hasta) para ver las compras en este período."
+                        : compras.length === 0
+                          ? "No hay compras disponibles"
+                          : "Ninguna compra coincide con el filtro o rango de fechas"}
                     </td>
                   </tr>
                 ) : (

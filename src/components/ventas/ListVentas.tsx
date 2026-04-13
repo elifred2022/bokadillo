@@ -11,7 +11,7 @@ import FormVentas from "./FormVentas";
 import { generarBoletaVentaJpeg } from "./boletaVentaImagen";
 import { VentaDetalleVentaCard } from "./VentaDetalleVentaCard";
 
-const actIconClass = "h-4 w-4 shrink-0";
+const actIconClass = "h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4";
 
 function IconoVer() {
   return (
@@ -480,7 +480,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
         </div>
         <div className="rounded-xl shadow-sm border border-slate-200 overflow-hidden bg-white">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[400px]">
+            <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="bg-red-100">
                   <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
@@ -501,7 +501,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                   <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
                     Entregado
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="w-[100px] min-w-[100px] px-2 py-3 text-left text-xs font-semibold text-red-800 sm:px-5 sm:text-sm max-sm:sticky max-sm:right-0 max-sm:z-20 max-sm:bg-red-100 max-sm:shadow-[-6px_0_10px_-4px_rgba(0,0,0,0.12)]">
                     Act
                   </th>
                 </tr>
@@ -532,7 +532,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                     return (
                       <tr
                         key={v.idventa || `venta-${i}`}
-                        className="border-t border-slate-100 bg-white hover:bg-red-50/50 transition-colors"
+                        className="group border-t border-slate-100 bg-white hover:bg-red-50/50 transition-colors"
                       >
                         <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
                           {v.idventa}
@@ -562,12 +562,12 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                               ? "Nuevo pedido"
                               : (v.entregado ?? "")}
                         </td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
-                          <div className="grid grid-cols-2 gap-1 w-fit">
+                        <td className="w-[100px] min-w-[100px] px-2 py-2 align-middle sm:px-5 sm:py-4 max-sm:sticky max-sm:right-0 max-sm:z-10 max-sm:bg-white max-sm:shadow-[-6px_0_10px_-4px_rgba(0,0,0,0.1)] group-hover:max-sm:bg-red-50/95">
+                          <div className="grid grid-cols-2 gap-1.5 justify-items-center">
                             <button
                               type="button"
                               onClick={() => abrirVer(v)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 sm:h-9 sm:w-9"
                               title="Ver detalle"
                               aria-label="Ver detalle"
                             >
@@ -576,7 +576,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                             <button
                               type="button"
                               onClick={() => abrirEditar(v)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 text-green-700 hover:bg-green-100"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-700 hover:bg-green-100 sm:h-9 sm:w-9"
                               title="Editar venta"
                               aria-label="Editar venta"
                             >
@@ -586,7 +586,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                               type="button"
                               onClick={() => compartirBoletaWhatsapp(v)}
                               disabled={whatsappBusy === v.idventa || descargaJpgBusy === v.idventa}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 sm:h-9 sm:w-9"
                               title="Enviar boleta por WhatsApp (JPG)"
                               aria-label="Enviar boleta por WhatsApp"
                             >
@@ -596,7 +596,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                               type="button"
                               onClick={() => handleEliminar(v.idventa)}
                               disabled={eliminando === v.idventa}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50 sm:h-9 sm:w-9"
                               title="Eliminar venta"
                               aria-label="Eliminar venta"
                             >
