@@ -61,10 +61,22 @@ interface ModalVerVentaProps {
   onEditar: () => void;
   onWhatsapp: (v: VentaList) => void;
   whatsappBusy: string | null;
+  onDescargarJpg: (v: VentaList) => void;
+  descargaJpgBusy: string | null;
 }
 
-function ModalVerVenta({ venta, onCerrar, onEditar, onWhatsapp, whatsappBusy }: ModalVerVentaProps) {
+function ModalVerVenta({
+  venta,
+  onCerrar,
+  onEditar,
+  onWhatsapp,
+  whatsappBusy,
+  onDescargarJpg,
+  descargaJpgBusy,
+}: ModalVerVentaProps) {
   const waLoading = whatsappBusy === venta.idventa;
+  const jpgLoading = descargaJpgBusy === venta.idventa;
+  const comprobanteGenerando = waLoading || jpgLoading;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
       <div className="w-full max-w-lg my-8">
@@ -84,8 +96,17 @@ function ModalVerVenta({ venta, onCerrar, onEditar, onWhatsapp, whatsappBusy }: 
             <div className="flex flex-col gap-2">
               <button
                 type="button"
+                onClick={() => onDescargarJpg(venta)}
+                disabled={comprobanteGenerando}
+                className="w-full rounded-full px-4 py-2.5 text-sm font-medium text-slate-800 bg-white border border-slate-300 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                title="Descargar el comprobante como imagen JPG"
+              >
+                {jpgLoading ? "Generando JPG…" : "Descargar comprobante (JPG)"}
+              </button>
+              <button
+                type="button"
                 onClick={() => onWhatsapp(venta)}
-                disabled={waLoading}
+                disabled={comprobanteGenerando}
                 className="w-full rounded-full px-4 py-2.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                 title="Generar boleta en JPG y compartir por WhatsApp"
               >
@@ -128,6 +149,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
   const [ocultarPendiente, setOcultarPendiente] = useState(false);
   const [ocultarEntregadas, setOcultarEntregadas] = useState(false);
   const [whatsappBusy, setWhatsappBusy] = useState<string | null>(null);
+  const [descargaJpgBusy, setDescargaJpgBusy] = useState<string | null>(null);
   const skipNextSave = useRef(true);
 
   useEffect(() => {
@@ -264,7 +286,27 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
     setVentaViendo(null);
   }
 
+  async function descargarComprobanteJpg(v: VentaList) {
+    if (whatsappBusy === v.idventa || descargaJpgBusy === v.idventa) return;
+    setDescargaJpgBusy(v.idventa);
+    try {
+      const blob = await generarBoletaVentaJpeg(v);
+      const nombre = `comprobante-venta-${v.idventa}.jpg`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = nombre;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "No se pudo descargar el comprobante");
+    } finally {
+      setDescargaJpgBusy(null);
+    }
+  }
+
   async function compartirBoletaWhatsapp(v: VentaList) {
+    if (whatsappBusy === v.idventa || descargaJpgBusy === v.idventa) return;
     setWhatsappBusy(v.idventa);
     try {
       const blob = await generarBoletaVentaJpeg(v);
@@ -358,6 +400,10 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
               void compartirBoletaWhatsapp(v);
             }}
             whatsappBusy={whatsappBusy}
+            onDescargarJpg={(v) => {
+              void descargarComprobanteJpg(v);
+            }}
+            descargaJpgBusy={descargaJpgBusy}
           />
         )}
         <div className="mb-4 flex flex-col sm:flex-row gap-4 flex-wrap">
@@ -517,7 +563,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                               : (v.entregado ?? "")}
                         </td>
                         <td className="px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
-                          <div className="flex flex-wrap gap-1">
+                          <div className="grid grid-cols-2 gap-1 w-fit">
                             <button
                               type="button"
                               onClick={() => abrirVer(v)}
@@ -539,7 +585,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                             <button
                               type="button"
                               onClick={() => compartirBoletaWhatsapp(v)}
-                              disabled={whatsappBusy === v.idventa}
+                              disabled={whatsappBusy === v.idventa || descargaJpgBusy === v.idventa}
                               className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
                               title="Enviar boleta por WhatsApp (JPG)"
                               aria-label="Enviar boleta por WhatsApp"
