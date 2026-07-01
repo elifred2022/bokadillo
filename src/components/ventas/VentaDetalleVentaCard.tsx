@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import type { VentaList, ArticuloVenta } from "@/lib/google-sheets";
+import type { VentaList, ArticuloVenta } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
 
 const fontStack = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import ListVentas from "./ListVentas";
-import type { VentaList } from "@/lib/google-sheets";
+import type { VentaList } from "@/lib/types";
 
 export default function ListVentasLoader() {
   const [ventas, setVentas] = useState<VentaList[] | null>(null);

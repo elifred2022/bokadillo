@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import ListaIndicadores from "./ListaIndicadores";
-import type { VentaList, CompraList } from "@/lib/google-sheets";
+import type { VentaList, CompraList } from "@/lib/types";
 
 export default function ListaIndicadoresLoader() {
   const [ventas, setVentas] = useState<VentaList[] | null>(null);

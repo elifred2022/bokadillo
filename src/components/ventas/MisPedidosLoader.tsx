@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import MisPedidos from "./MisPedidos";
-import type { VentaList } from "@/lib/google-sheets";
+import type { VentaList } from "@/lib/types";
 
 export default function MisPedidosLoader() {
   const { usuario } = useAuth();

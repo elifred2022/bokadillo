@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
-import type { VentaList } from "@/lib/google-sheets";
+import type { VentaList } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
 import { contienePalabraCompleta } from "@/lib/filtro";
 import FormVentas from "./FormVentas";

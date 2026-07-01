@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import type { ArticuloVenta } from "@/lib/google-sheets";
+import type { ArticuloVenta } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
 
 const ID_ARTICULO_123 = "123";

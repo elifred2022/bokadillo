@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { VentaList, ArticuloVenta } from "@/lib/google-sheets";
+import type { VentaList, ArticuloVenta } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
 import FormPedidoUsuario from "./FormPedidoUsuario";
 

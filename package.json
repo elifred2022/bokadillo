@@ -10,7 +10,9 @@
     "favicon": "node scripts/generate-favicon.mjs",
     "migrate:articulos": "node --env-file=.env.local scripts/migrate-articulos.mjs",
     "migrate:clientes": "node --env-file=.env.local scripts/migrate-clientes.mjs",
-    "migrate:proveedores": "node --env-file=.env.local scripts/migrate-proveedores.mjs"
+    "migrate:proveedores": "node --env-file=.env.local scripts/migrate-proveedores.mjs",
+    "migrate:ventas": "node --env-file=.env.local scripts/migrate-ventas.mjs",
+    "migrate:compras": "node --env-file=.env.local scripts/migrate-compras.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",

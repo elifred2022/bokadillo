@@ -4,21 +4,20 @@ App de gestión y almacén de productos.
 
 ## Base de datos
 
-### Supabase (artículos, clientes y proveedores)
+### Supabase (todas las entidades)
 
-**Artículos**, **clientes** y **proveedores** usan Supabase. Configuración local:
+Artículos, clientes, proveedores, ventas y compras usan Supabase.
 
 1. Proyecto en [Supabase](https://supabase.com/dashboard).
-2. SQL de referencia: `supabase/migrations/001_articulos.sql`, `002_clientes.sql`, `003_proveedores.sql`.
+2. SQL de referencia: `supabase/migrations/001`–`005`.
 3. Variables en `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
-4. Migración opcional desde Sheets: `npm run migrate:articulos`, `migrate:clientes`, `migrate:proveedores`.
+4. Migración opcional desde Sheets: `npm run migrate:articulos`, `migrate:clientes`, `migrate:proveedores`, `migrate:ventas`, `migrate:compras`.
 
-### Google Sheets (resto — en migración)
-
-Ventas y compras siguen en Sheets por ahora.
-
-- **ventas**: idventa, fecha, cliente, nombre, cantidad, total, entregado, idcliente
-- **compras**: idcompra, fecha, proveedor, idarticulo, articulo, cantidad, total, factura
+Mapeos habituales:
+- `id` → `idventa` / `idcompra` en la app
+- `created_at` → `fecha`
+- Ventas: columna `nombre` (JSON ítems)
+- Compras: columna `articulo` (JSON ítems), `factura` numérica
 
 ---
 

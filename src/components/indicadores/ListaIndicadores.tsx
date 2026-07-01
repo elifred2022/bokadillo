@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import * as XLSX from "xlsx";
-import type { VentaList, CompraList, ArticuloVenta } from "@/lib/google-sheets";
+import type { VentaList, CompraList, ArticuloVenta } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
 
 interface ListaIndicadoresProps {

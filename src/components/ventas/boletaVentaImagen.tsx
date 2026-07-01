@@ -2,7 +2,7 @@
 
 import { createRoot, type Root } from "react-dom/client";
 import html2canvas from "html2canvas";
-import type { VentaList } from "@/lib/google-sheets";
+import type { VentaList } from "@/lib/types";
 import { VentaDetalleVentaCard } from "./VentaDetalleVentaCard";
 
 /**

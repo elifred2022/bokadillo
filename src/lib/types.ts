@@ -49,6 +49,11 @@ export interface VentaList {
   entregado: string;
 }
 
+export type VentaUpdatePayload = Partial<Omit<VentaList, "idventa">> & {
+  articulos?: ArticuloVenta[];
+  idcliente?: string;
+};
+
 export interface Proveedor {
   idproveedor: string;
   nombre: string;
@@ -107,3 +112,15 @@ export interface CompraList {
   cantidad?: number;
   total: number;
 }
+
+export interface CompraNueva {
+  fecha: string;
+  proveedor: string;
+  factura?: string;
+  articulos: ArticuloCompra[];
+  total: number;
+}
+
+export type CompraUpdatePayload = Partial<Omit<CompraList, "idcompra">> & {
+  articulos?: ArticuloCompra[];
+};

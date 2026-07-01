@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import {
   getCompras,
   insertarCompra,
-} from "@/lib/google-sheets";
+} from "@/lib/db/compras";
 import { actualizarPrecioYStockArticulo } from "@/lib/db/articulos";
 
 export const dynamic = "force-dynamic";

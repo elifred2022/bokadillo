@@ -3,7 +3,7 @@ import {
   eliminarVenta,
   actualizarVenta,
   getVentas,
-} from "@/lib/google-sheets";
+} from "@/lib/db/ventas";
 import {
   descontarStockArticulo,
   reponerStockArticulo,
