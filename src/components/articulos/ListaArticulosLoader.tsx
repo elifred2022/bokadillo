@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import ListaArticulos from "./ListaArticulos";
-import type { Articulo } from "@/lib/google-sheets";
+import type { Articulo } from "@/lib/types";
 
 export default function ListaArticulosLoader() {
   const [articulos, setArticulos] = useState<Articulo[] | null>(null);

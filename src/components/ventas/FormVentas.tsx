@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import type { VentaList, ArticuloVenta, Cliente, Articulo } from "@/lib/google-sheets";
+import type { VentaList, ArticuloVenta, Cliente, Articulo } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
 
 interface ArticuloEncontrado {

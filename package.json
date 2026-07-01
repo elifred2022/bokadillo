@@ -7,9 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "favicon": "node scripts/generate-favicon.mjs"
+    "favicon": "node scripts/generate-favicon.mjs",
+    "migrate:articulos": "node --env-file=.env.local scripts/migrate-articulos.mjs",
+    "migrate:clientes": "node --env-file=.env.local scripts/migrate-clientes.mjs",
+    "migrate:proveedores": "node --env-file=.env.local scripts/migrate-proveedores.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.9",
     "bcryptjs": "^3.0.3",
     "googleapis": "^171.4.0",
     "html2canvas": "^1.4.1",

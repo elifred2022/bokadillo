@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import ListClientes from "./ListClientes";
-import type { Cliente } from "@/lib/google-sheets";
+import type { Cliente } from "@/lib/types";
 
 export default function ListClientesLoader() {
   const [clientes, setClientes] = useState<Cliente[] | null>(null);

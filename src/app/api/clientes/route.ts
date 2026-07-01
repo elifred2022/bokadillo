@@ -3,7 +3,7 @@ import {
   getClientes,
   insertarCliente,
   generarSiguienteIdCliente,
-} from "@/lib/google-sheets";
+} from "@/lib/db/clientes";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

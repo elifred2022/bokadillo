@@ -3,7 +3,7 @@ import {
   getClientePorEmail,
   insertarCliente,
   generarSiguienteIdCliente,
-} from "@/lib/google-sheets";
+} from "@/lib/db/clientes";
 import { hashClave } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";

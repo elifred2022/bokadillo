@@ -3,9 +3,11 @@ import {
   getCompras,
   actualizarCompra,
   eliminarCompra,
+} from "@/lib/google-sheets";
+import {
   actualizarPrecioYStockArticulo,
   restarStockArticulo,
-} from "@/lib/google-sheets";
+} from "@/lib/db/articulos";
 
 export async function PUT(
   request: Request,

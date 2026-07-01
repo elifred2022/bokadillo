@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import {
   getCompras,
   insertarCompra,
-  actualizarPrecioYStockArticulo,
 } from "@/lib/google-sheets";
+import { actualizarPrecioYStockArticulo } from "@/lib/db/articulos";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
       }
     } catch (err) {
       for (const d of actualizados) {
-        const { restarStockArticulo } = await import("@/lib/google-sheets");
+        const { restarStockArticulo } = await import("@/lib/db/articulos");
         await restarStockArticulo(d.id, d.cant).catch(() => {});
       }
       const msg =
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true });
     } catch (err) {
       for (const d of actualizados) {
-        const { restarStockArticulo } = await import("@/lib/google-sheets");
+        const { restarStockArticulo } = await import("@/lib/db/articulos");
         await restarStockArticulo(d.id, d.cant).catch(() => {});
       }
       throw err;

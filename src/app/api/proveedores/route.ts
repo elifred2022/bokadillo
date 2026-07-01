@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { getProveedores, insertarProveedor, proveedorExiste } from "@/lib/google-sheets";
+import {
+  getProveedores,
+  insertarProveedor,
+  proveedorExiste,
+} from "@/lib/db/proveedores";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

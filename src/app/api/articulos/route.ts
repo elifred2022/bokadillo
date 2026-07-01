@@ -3,9 +3,9 @@ import {
   getArticulos,
   insertarArticulo,
   articuloExistePorCodbarra,
-} from "@/lib/google-sheets";
+} from "@/lib/db/articulos";
 
-// Evita caché en Vercel/Next.js para que siempre se lean datos frescos de Google Sheets
+// Evita caché en Vercel/Next.js para que siempre se lean datos frescos
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 

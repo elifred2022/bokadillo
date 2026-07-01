@@ -2,11 +2,23 @@
 
 App de gestión y almacén de productos.
 
-## Hojas de Google Sheets
+## Base de datos
 
-- **clientes**: idcliente, nombre, telefono, email, direccion, fechaCreacion, **clave**. Si falta `clave`, añádela en la columna G (para login de usuarios).
-- **ventas**: idventa, fecha, cliente, nombre, cantidad, total, entregado, idcliente. La columna `idcliente` al final.
-- **compras**: idcompra, fecha, proveedor, idarticulo, articulo, cantidad, total, factura. Si falta `factura`, añádela en la columna H.
+### Supabase (artículos, clientes y proveedores)
+
+**Artículos**, **clientes** y **proveedores** usan Supabase. Configuración local:
+
+1. Proyecto en [Supabase](https://supabase.com/dashboard).
+2. SQL de referencia: `supabase/migrations/001_articulos.sql`, `002_clientes.sql`, `003_proveedores.sql`.
+3. Variables en `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+4. Migración opcional desde Sheets: `npm run migrate:articulos`, `migrate:clientes`, `migrate:proveedores`.
+
+### Google Sheets (resto — en migración)
+
+Ventas y compras siguen en Sheets por ahora.
+
+- **ventas**: idventa, fecha, cliente, nombre, cantidad, total, entregado, idcliente
+- **compras**: idcompra, fecha, proveedor, idarticulo, articulo, cantidad, total, factura
 
 ---
 

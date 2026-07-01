@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getClientePorEmail } from "@/lib/google-sheets";
+import { getClientePorEmail } from "@/lib/db/clientes";
 import { verificarClave } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";

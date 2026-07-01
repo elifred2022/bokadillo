@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Cliente } from "@/lib/google-sheets";
+import type { Cliente } from "@/lib/types";
 import { contienePalabraCompleta } from "@/lib/filtro";
 import FormCliente from "./FormCliente";
 

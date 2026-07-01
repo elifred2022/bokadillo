@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import type { Proveedor } from "@/lib/google-sheets";
+import type { Proveedor } from "@/lib/types";
 
 interface FormProveedoresProps {
   onCerrar: () => void;

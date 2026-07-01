@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { Cliente } from "@/lib/google-sheets";
+import type { Cliente } from "@/lib/types";
 
 interface FormClienteProps {
   onCerrar: () => void;

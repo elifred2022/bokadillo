@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eliminarArticulo, articuloExiste, articuloExistePorCodbarra, actualizarArticulo } from "@/lib/google-sheets";
+import { eliminarArticulo, articuloExiste, articuloExistePorCodbarra, actualizarArticulo } from "@/lib/db/articulos";
 
 export async function GET(
   _request: Request,

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import type { Articulo } from "@/lib/google-sheets";
+import type { Articulo } from "@/lib/types";
 
 interface FormArticulosProps {
   onCerrar: () => void;

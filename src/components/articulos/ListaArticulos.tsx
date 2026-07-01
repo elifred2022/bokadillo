@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
-import type { Articulo } from "@/lib/google-sheets";
+import type { Articulo } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
 import { contienePalabraCompleta } from "@/lib/filtro";
 import FormArticulos from "./FormArticulos";

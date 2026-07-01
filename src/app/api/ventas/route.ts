@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import {
   getVentas,
   insertarVenta,
+} from "@/lib/google-sheets";
+import {
   descontarStockArticulo,
   reponerStockArticulo,
-} from "@/lib/google-sheets";
+} from "@/lib/db/articulos";
 
 // Evita caché en Vercel/Next.js para que siempre se lean datos frescos de Google Sheets
 export const dynamic = "force-dynamic";

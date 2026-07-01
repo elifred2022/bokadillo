@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import ListCompras from "./ListCompras";
-import type { CompraList, Proveedor } from "@/lib/google-sheets";
+import type { CompraList, Proveedor } from "@/lib/types";
 
 export default function ListaComprasLoader() {
   const [compras, setCompras] = useState<CompraList[] | null>(null);

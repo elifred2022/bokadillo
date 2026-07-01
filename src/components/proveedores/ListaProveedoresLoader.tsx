@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import ListaProveedores from "./ListaProveedores";
-import type { Proveedor } from "@/lib/google-sheets";
+import type { Proveedor } from "@/lib/types";
 
 export default function ListaProveedoresLoader() {
   const [proveedores, setProveedores] = useState<Proveedor[] | null>(null);

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Proveedor } from "@/lib/google-sheets";
+import type { Proveedor } from "@/lib/types";
 import { contienePalabraCompleta } from "@/lib/filtro";
 import FormProveedores from "./FormProveedores";
 

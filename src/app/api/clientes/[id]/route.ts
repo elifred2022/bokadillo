@@ -4,7 +4,7 @@ import {
   clienteExiste,
   actualizarCliente,
   getClientes,
-} from "@/lib/google-sheets";
+} from "@/lib/db/clientes";
 
 export async function GET(
   _request: Request,

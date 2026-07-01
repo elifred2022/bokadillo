@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { articuloExistePorCodbarra } from "@/lib/google-sheets";
+import { articuloExistePorCodbarra } from "@/lib/db/articulos";
 
 export async function GET(request: Request) {
   try {

@@ -3,7 +3,7 @@ import {
   eliminarProveedor,
   proveedorExiste,
   actualizarProveedor,
-} from "@/lib/google-sheets";
+} from "@/lib/db/proveedores";
 
 export async function GET(
   _request: Request,

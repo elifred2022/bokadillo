@@ -1,86 +1,57 @@
-import { google } from 'googleapis';
+﻿import { google } from 'googleapis';
+import type {
+  ArticuloVenta,
+  Venta,
+  VentaList,
+  ArticuloCompra,
+  CompraList,
+} from './types';
 
-// Interfaces para los datos de Google Sheets
-export interface Articulo {
-  codbarra: string;
-  idarticulo: string;
-  nombre: string;
-  descripcion?: string;
-  precio: number;
-  stock: number;
-  categoria?: string;
-}
+export type {
+  Articulo,
+  ArticuloNuevo,
+  ArticuloVenta,
+  Venta,
+  VentaList,
+  Proveedor,
+  ProveedorNuevo,
+  Cliente,
+  ClienteNuevo,
+  ArticuloCompra,
+  CompraList,
+} from './types';
 
-/** Artículo individual dentro de una venta (array en campo nombre) */
-export interface ArticuloVenta {
-  idarticulo: string;
-  nombre: string;
-  cantidad: number;
-  total: number;
-}
+export {
+  getArticulos,
+  articuloExiste,
+  articuloExistePorCodbarra,
+  insertarArticulo,
+  actualizarArticulo,
+  descontarStockArticulo,
+  actualizarPrecioYStockArticulo,
+  restarStockArticulo,
+  reponerStockArticulo,
+  eliminarArticulo,
+} from './db/articulos';
 
-export interface Venta {
-  fecha: string;
-  articulos: ArticuloVenta[];
-  entregado?: string;
-  total: number;
-  cliente?: string;
-  idcliente?: string;
-}
+export {
+  getClientes,
+  clienteExiste,
+  getClientePorEmail,
+  clienteExistePorEmail,
+  generarSiguienteIdCliente,
+  insertarCliente,
+  actualizarCliente,
+  eliminarCliente,
+} from './db/clientes';
 
-/** Venta tal como se muestra en la lista. nombre puede ser JSON (array) o string legacy */
-export interface VentaList {
-  idventa: string;
-  fecha: string;
-  cliente: string; // nombre del cliente
-  nombre: string; // JSON string de ArticuloVenta[] o string legacy
-  articulos?: ArticuloVenta[]; // parseado desde nombre cuando es JSON
-  cantidad?: number; // legacy
-  precioUnitario?: number; // legacy
-  total: number;
-  entregado: string;
-}
-
-export interface Proveedor {
-  idproveedor: string;
-  nombre: string;
-  telefono?: string;
-  email?: string;
-  direccion?: string;
-  contacto?: string;
-}
-
-export interface Cliente {
-  idcliente: string;
-  nombre: string;
-  telefono?: string;
-  email?: string;
-  direccion?: string;
-  fechaCreacion: string;
-  /** Hash de la contraseña (bcrypt). Solo presente en clientes registrados para login. */
-  clave?: string;
-}
-
-/** Artículo individual dentro de una compra (array en campo articulo) */
-export interface ArticuloCompra {
-  idarticulo: string;
-  nombre: string;
-  cantidad: number;
-  total: number;
-}
-
-/** Compra tal como se muestra en la lista. articulo puede ser JSON (array) o string legacy */
-export interface CompraList {
-  idcompra: string;
-  fecha: string;
-  proveedor: string;
-  factura?: string; // número de factura de la compra
-  idarticulo?: string; // legacy
-  articulo: string; // JSON string de ArticuloCompra[] o string legacy
-  articulos?: ArticuloCompra[]; // parseado desde articulo cuando es JSON
-  cantidad?: number; // legacy
-  total: number; // total de la compra (suma de totales de artículos)
-}
+export {
+  getProveedores,
+  proveedorExiste,
+  insertarProveedor,
+  actualizarProveedor,
+  eliminarProveedor,
+} from './db/proveedores';
 
 function getSpreadsheetId(): string {
   const id = process.env.GOOGLE_SHEET_ID ?? '';
@@ -95,7 +66,7 @@ function parseFecha(val: string | number | undefined): string {
   if (!s) return '';
   const n = parseFloat(s);
   // Solo convertir si parece serial de Excel (n > 25569 = 1970-01-01).
-  // Evita convertir años (2024, 2025) u otros números que darían fechas erróneas como 1905.
+  // Evita convertir aÃ±os (2024, 2025) u otros nÃºmeros que darÃ­an fechas errÃ³neas como 1905.
   if (!Number.isNaN(n) && n > 25569 && n < 100000) {
     const d = new Date((n - 25569) * 86400 * 1000);
     return d.toISOString().split('T')[0];
@@ -110,7 +81,7 @@ function parsePrivateKey(raw: string | undefined): string {
     .replace(/\r\n/g, '\n')       // Windows line endings
     .replace(/\r/g, '\n')         // Mac antiguo
     .trim();
-  // Quita comillas externas si Vercel las añadió
+  // Quita comillas externas si Vercel las aÃ±adiÃ³
   if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
     key = key.slice(1, -1).replace(/\\n/g, '\n');
   }
@@ -137,461 +108,8 @@ export async function getGoogleSheetsClient() {
 
   return google.sheets({ version: 'v4', auth });
 }
-
 /**
- * Obtiene todos los datos de la pestaña 'articulos'.
- * La primera fila debe contener los encabezados.
- */
-export async function getArticulos(): Promise<Articulo[]> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "'articulos'!A:Z",
-  });
-
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    return [];
-  }
-
-  const headers = rows[0] as string[];
-  const headerIndex = (keys: string[]) => {
-    for (const key of keys) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === key.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idx = {
-    codbarra: headerIndex(['codbarra', 'cod barra']),
-    id: headerIndex(['id', 'idarticulo', 'id artículo']),
-    nombre: headerIndex(['nombre']),
-    descripcion: headerIndex(['descripcion', 'descripción']),
-    precio: headerIndex(['precio']),
-    stock: headerIndex(['stock', 'existencia', 'inventario']),
-    categoria: headerIndex(['categoria', 'categoría']),
-  };
-
-  return rows.slice(1).map((row) => {
-    const get = (i: number) => (i >= 0 && row[i] !== undefined ? String(row[i]).trim() : '');
-    const getNum = (i: number) => {
-      const val = get(i);
-      const n = parseFloat(val);
-      return Number.isNaN(n) ? 0 : n;
-    };
-
-    return {
-      codbarra: idx.codbarra >= 0 ? get(idx.codbarra) : '',
-      idarticulo: get(idx.id),
-      nombre: get(idx.nombre),
-      descripcion: idx.descripcion >= 0 ? get(idx.descripcion) : undefined,
-      precio: getNum(idx.precio),
-      stock: getNum(idx.stock),
-      categoria: idx.categoria >= 0 ? get(idx.categoria) : undefined,
-    } satisfies Articulo;
-  });
-}
-
-export interface ArticuloNuevo {
-  codbarra: string;
-  idarticulo: string;
-  nombre: string;
-  descripcion?: string;
-  precio: number;
-  stock: number;
-}
-
-/**
- * Verifica si ya existe un artículo con el ID dado.
- */
-export async function articuloExiste(id: string): Promise<boolean> {
-  const articulos = await getArticulos();
-  const buscado = id.trim().toLowerCase();
-  return articulos.some((a) => a.idarticulo.trim().toLowerCase() === buscado);
-}
-
-/**
- * Verifica si ya existe un artículo con el código de barras dado.
- * @param excluirId - ID del artículo a excluir (modo edición)
- */
-export async function articuloExistePorCodbarra(
-  codbarra: string,
-  excluirId?: string
-): Promise<boolean> {
-  const c = codbarra.trim();
-  if (!c) return false;
-  const articulos = await getArticulos();
-  const buscado = c.toLowerCase();
-  return articulos.some(
-    (a) =>
-      a.codbarra.trim().toLowerCase() === buscado &&
-      (!excluirId || a.idarticulo.trim().toLowerCase() !== excluirId.trim().toLowerCase())
-  );
-}
-
-/**
- * Inserta una nueva fila en la pestaña 'articulos'.
- */
-export async function insertarArticulo(articulo: ArticuloNuevo): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const values = [
-    [
-      articulo.codbarra,
-      articulo.idarticulo,
-      articulo.nombre,
-      articulo.descripcion ?? '',
-      articulo.precio,
-      articulo.stock,
-    ],
-  ];
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range: "'articulos'!A:F",
-    valueInputOption: 'USER_ENTERED',
-    insertDataOption: 'INSERT_ROWS',
-    requestBody: {
-      values,
-    },
-  });
-}
-
-/**
- * Actualiza un artículo existente por su ID.
- */
-export async function actualizarArticulo(
-  idAntiguo: string,
-  articulo: ArticuloNuevo
-): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "'articulos'!A:Z",
-  });
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    throw new Error('Artículo no encontrado');
-  }
-
-  const headers = rows[0] as string[];
-  const findCol = (names: string[]) => {
-    for (const name of names) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === name.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idCol = findCol(['id', 'idarticulo', 'id artículo', 'id articulo', 'codigo', 'código']);
-  if (idCol < 0) {
-    throw new Error(`Columna id no encontrada. Columnas disponibles: ${JSON.stringify(headers)}`);
-  }
-
-  const rowIndex = rows.findIndex(
-    (row, i) => i > 0 && String(row[idCol] ?? '').trim().toLowerCase() === idAntiguo.trim().toLowerCase()
-  );
-  if (rowIndex < 0) {
-    throw new Error('Artículo no encontrado');
-  }
-
-  const sheetRow = rowIndex + 1;
-  const range = `'articulos'!A${sheetRow}:F${sheetRow}`;
-  const values = [
-    [
-      articulo.codbarra,
-      articulo.idarticulo,
-      articulo.nombre,
-      articulo.descripcion ?? '',
-      articulo.precio,
-      articulo.stock,
-    ],
-  ];
-
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range,
-    valueInputOption: 'USER_ENTERED',
-    requestBody: { values },
-  });
-}
-
-/**
- * Obtiene el título exacto de la hoja 'articulos' desde el spreadsheet.
- */
-async function getArticulosSheetTitle(): Promise<string> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
-  const articulosSheet = spreadsheet.data.sheets?.find(
-    (s) => s.properties?.title?.toLowerCase() === 'articulos'
-  );
-  if (!articulosSheet?.properties?.title) {
-    throw new Error('No se encontró la hoja articulos');
-  }
-  return articulosSheet.properties.title;
-}
-
-/**
- * Actualiza solo la celda de stock de un artículo (detecta columna por header).
- */
-async function actualizarStockArticuloPorId(idarticulo: string, nuevoStock: number): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-  const sheetTitle = await getArticulosSheetTitle();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: `'${sheetTitle}'!A:Z`,
-  });
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    throw new Error('Artículo no encontrado');
-  }
-
-  const headers = rows[0] as string[];
-  const findCol = (names: string[]) => {
-    for (const name of names) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === name.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idCol = findCol(['id', 'idarticulo', 'id artículo', 'id articulo', 'codigo', 'código']);
-  const stockCol = findCol(['stock', 'existencia', 'inventario']);
-  if (idCol < 0 || stockCol < 0) {
-    const found = { id: idCol >= 0, stock: stockCol >= 0 };
-    throw new Error(
-      `Columnas no encontradas en articulos. Encontradas: ${JSON.stringify(headers)}. Se buscan: id/idarticulo y stock/existencia`
-    );
-  }
-
-  const rowIndex = rows.findIndex(
-    (row, i) => i > 0 && String(row[idCol] ?? '').trim().toLowerCase() === idarticulo.trim().toLowerCase()
-  );
-  if (rowIndex < 0) {
-    throw new Error('Artículo no encontrado');
-  }
-
-  const sheetRow = rowIndex + 1;
-  const toCol = (n: number): string =>
-    n < 26 ? String.fromCharCode(65 + n) : toCol(Math.floor(n / 26) - 1) + String.fromCharCode(65 + (n % 26));
-  const stockCell = `${toCol(stockCol)}${sheetRow}`;
-  const range = `'${sheetTitle}'!${stockCell}`;
-
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range,
-    valueInputOption: 'USER_ENTERED',
-    requestBody: { values: [[nuevoStock]] },
-  });
-}
-
-/**
- * Descuenta la cantidad vendida del stock del artículo.
- * @throws Error si el artículo no existe o no hay stock suficiente
- */
-export async function descontarStockArticulo(idarticulo: string, cantidad: number): Promise<void> {
-  if (!idarticulo?.trim() || cantidad <= 0) return;
-
-  const articulos = await getArticulos();
-  const articulo = articulos.find(
-    (a) => a.idarticulo.trim().toLowerCase() === idarticulo.trim().toLowerCase()
-  );
-  if (!articulo) {
-    throw new Error('Artículo no encontrado');
-  }
-  const nuevoStock = articulo.stock - cantidad;
-  if (nuevoStock < 0) {
-    throw new Error(
-      `Stock insuficiente. Disponible: ${articulo.stock}, solicitado: ${cantidad}`
-    );
-  }
-  await actualizarStockArticuloPorId(articulo.idarticulo, nuevoStock);
-}
-
-/**
- * Actualiza precio y stock de un artículo (para compras).
- * Suma cantidadAAgregar al stock actual y establece nuevoPrecio.
- */
-export async function actualizarPrecioYStockArticulo(
-  idarticulo: string,
-  nuevoPrecio: number,
-  cantidadAAgregar: number
-): Promise<void> {
-  if (!idarticulo?.trim()) return;
-
-  const articulos = await getArticulos();
-  const articulo = articulos.find(
-    (a) => a.idarticulo.trim().toLowerCase() === idarticulo.trim().toLowerCase()
-  );
-  if (!articulo) {
-    throw new Error('Artículo no encontrado');
-  }
-
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-  const sheetTitle = await getArticulosSheetTitle();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: `'${sheetTitle}'!A:Z`,
-  });
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    throw new Error('Artículo no encontrado');
-  }
-
-  const headers = rows[0] as string[];
-  const findCol = (names: string[]) => {
-    for (const name of names) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === name.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idCol = findCol(['id', 'idarticulo', 'id artículo', 'id articulo', 'codigo', 'código']);
-  const precioCol = findCol(['precio']);
-  const stockCol = findCol(['stock', 'existencia', 'inventario']);
-  if (idCol < 0 || precioCol < 0 || stockCol < 0) {
-    throw new Error(
-      `Columnas no encontradas en articulos. Encontradas: ${JSON.stringify(headers)}`
-    );
-  }
-
-  const rowIndex = rows.findIndex(
-    (row, i) => i > 0 && String(row[idCol] ?? '').trim().toLowerCase() === idarticulo.trim().toLowerCase()
-  );
-  if (rowIndex < 0) {
-    throw new Error('Artículo no encontrado');
-  }
-
-  const nuevoStock = articulo.stock + cantidadAAgregar;
-  const sheetRow = rowIndex + 1;
-  const toCol = (n: number): string =>
-    n < 26 ? String.fromCharCode(65 + n) : toCol(Math.floor(n / 26) - 1) + String.fromCharCode(65 + (n % 26));
-  const precioCell = `${toCol(precioCol)}${sheetRow}`;
-  const stockCell = `${toCol(stockCol)}${sheetRow}`;
-
-  await sheets.spreadsheets.values.batchUpdate({
-    spreadsheetId,
-    requestBody: {
-      valueInputOption: 'USER_ENTERED',
-      data: [
-        { range: `'${sheetTitle}'!${precioCell}`, values: [[nuevoPrecio]] },
-        { range: `'${sheetTitle}'!${stockCell}`, values: [[nuevoStock]] },
-      ],
-    },
-  });
-}
-
-/**
- * Resta stock de un artículo (revierte una compra eliminada o editada).
- */
-export async function restarStockArticulo(idarticulo: string, cantidad: number): Promise<void> {
-  if (!idarticulo?.trim() || cantidad <= 0) return;
-
-  const articulos = await getArticulos();
-  const articulo = articulos.find(
-    (a) => a.idarticulo.trim().toLowerCase() === idarticulo.trim().toLowerCase()
-  );
-  if (!articulo) {
-    throw new Error('Artículo no encontrado');
-  }
-  const nuevoStock = articulo.stock - cantidad;
-  if (nuevoStock < 0) {
-    throw new Error(`Stock insuficiente para revertir. Disponible: ${articulo.stock}`);
-  }
-  await actualizarStockArticuloPorId(articulo.idarticulo, nuevoStock);
-}
-
-/**
- * Repone stock a un artículo (para revertir un descuento).
- */
-export async function reponerStockArticulo(idarticulo: string, cantidad: number): Promise<void> {
-  if (!idarticulo?.trim() || cantidad <= 0) return;
-
-  const articulos = await getArticulos();
-  const articulo = articulos.find(
-    (a) => a.idarticulo.trim().toLowerCase() === idarticulo.trim().toLowerCase()
-  );
-  if (!articulo) return;
-  await actualizarStockArticuloPorId(articulo.idarticulo, articulo.stock + cantidad);
-}
-
-/**
- * Elimina un artículo por su ID en la pestaña 'articulos'.
- */
-export async function eliminarArticulo(id: string): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const spreadsheet = await sheets.spreadsheets.get({
-    spreadsheetId,
-  });
-
-  const articulosSheet = spreadsheet.data.sheets?.find(
-    (s) => s.properties?.title?.toLowerCase() === 'articulos'
-  );
-  const sheetId = articulosSheet?.properties?.sheetId;
-  if (sheetId === undefined) {
-    throw new Error('No se encontró la hoja articulos');
-  }
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "'articulos'!A:Z",
-  });
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    throw new Error('Artículo no encontrado');
-  }
-
-  const headers = rows[0] as string[];
-  const findCol = (names: string[]) => {
-    for (const name of names) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === name.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idCol = findCol(['id', 'idarticulo', 'id artículo', 'id articulo', 'codigo', 'código']);
-  if (idCol < 0) {
-    throw new Error(`Columna id no encontrada. Columnas disponibles: ${JSON.stringify(headers)}`);
-  }
-
-  const rowIndex = rows.findIndex(
-    (row, i) => i > 0 && String(row[idCol] ?? '').trim().toLowerCase() === id.trim().toLowerCase()
-  );
-  if (rowIndex < 0) {
-    throw new Error('Artículo no encontrado');
-  }
-
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: {
-      requests: [
-        {
-          deleteDimension: {
-            range: {
-              sheetId,
-              dimension: 'ROWS',
-              startIndex: rowIndex,
-              endIndex: rowIndex + 1,
-            },
-          },
-        },
-      ],
-    },
-  });
-}
-
-/**
- * Obtiene todas las ventas de la pestaña 'ventas'.
+ * Obtiene todas las ventas de la pestaÃ±a 'ventas'.
  * Columnas esperadas: idventa, fecha, cliente, nombre, cantidad, total
  */
 export async function getVentas(): Promise<VentaList[]> {
@@ -645,7 +163,7 @@ export async function getVentas(): Promise<VentaList[]> {
         articulos = JSON.parse(nombreRaw) as ArticuloVenta[];
         if (!Array.isArray(articulos)) articulos = undefined;
       } catch {
-        /* Si el JSON no es válido, se trata como nombre legacy */
+        /* Si el JSON no es vÃ¡lido, se trata como nombre legacy */
       }
     }
 
@@ -676,7 +194,7 @@ export async function eliminarVenta(idventa: string): Promise<void> {
   );
   const sheetId = ventasSheet?.properties?.sheetId;
   if (sheetId === undefined) {
-    throw new Error('No se encontró la hoja ventas');
+    throw new Error('No se encontrÃ³ la hoja ventas');
   }
 
   const response = await sheets.spreadsheets.values.get({
@@ -817,7 +335,7 @@ export async function actualizarVenta(
 }
 
 /**
- * Genera el siguiente idventa automáticamente (secuencial).
+ * Genera el siguiente idventa automÃ¡ticamente (secuencial).
  */
 export async function generarSiguienteIdVenta(): Promise<string> {
   const ventas = await getVentas();
@@ -830,9 +348,9 @@ export async function generarSiguienteIdVenta(): Promise<string> {
 }
 
 /**
- * Inserta una nueva fila en la pestaña 'ventas'.
- * El idventa se genera automáticamente.
- * nombre almacena JSON del array de artículos; total es la suma de totales.
+ * Inserta una nueva fila en la pestaÃ±a 'ventas'.
+ * El idventa se genera automÃ¡ticamente.
+ * nombre almacena JSON del array de artÃ­culos; total es la suma de totales.
  */
 export async function insertarVenta(venta: Venta): Promise<void> {
   const sheets = await getGoogleSheetsClient();
@@ -869,216 +387,10 @@ export async function insertarVenta(venta: Venta): Promise<void> {
   });
 }
 
-// ─── Proveedores ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Compras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
- * Obtiene todos los datos de la pestaña 'proveedores'.
- */
-export async function getProveedores(): Promise<Proveedor[]> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "'proveedores'!A:Z",
-  });
-
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    return [];
-  }
-
-  const headers = rows[0] as string[];
-  const headerIndex = (keys: string[]) => {
-    for (const key of keys) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === key.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idx = {
-    id: headerIndex(['id', 'idproveedor', 'id proveedor', 'codigo', 'código']),
-    nombre: headerIndex(['nombre']),
-    telefono: headerIndex(['telefono', 'teléfono', 'phone']),
-    email: headerIndex(['email', 'correo', 'e-mail']),
-    direccion: headerIndex(['direccion', 'dirección', 'dir', 'address']),
-    contacto: headerIndex(['contacto', 'persona contacto']),
-  };
-
-  return rows.slice(1).map((row) => {
-    const get = (i: number) => (i >= 0 && row[i] !== undefined ? String(row[i]).trim() : '');
-    return {
-      idproveedor: idx.id >= 0 ? get(idx.id) : '',
-      nombre: get(idx.nombre),
-      telefono: idx.telefono >= 0 ? get(idx.telefono) || undefined : undefined,
-      email: idx.email >= 0 ? get(idx.email) || undefined : undefined,
-      direccion: idx.direccion >= 0 ? get(idx.direccion) || undefined : undefined,
-      contacto: idx.contacto >= 0 ? get(idx.contacto) || undefined : undefined,
-    } satisfies Proveedor;
-  });
-}
-
-export interface ProveedorNuevo {
-  idproveedor: string;
-  nombre: string;
-  telefono?: string;
-  email?: string;
-  direccion?: string;
-  contacto?: string;
-}
-
-export async function proveedorExiste(id: string): Promise<boolean> {
-  const proveedores = await getProveedores();
-  const buscado = id.trim().toLowerCase();
-  return proveedores.some((p) => p.idproveedor.trim().toLowerCase() === buscado);
-}
-
-export async function insertarProveedor(proveedor: ProveedorNuevo): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const values = [
-    [
-      proveedor.idproveedor,
-      proveedor.nombre,
-      proveedor.telefono ?? '',
-      proveedor.email ?? '',
-      proveedor.direccion ?? '',
-      proveedor.contacto ?? '',
-    ],
-  ];
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range: "'proveedores'!A:F",
-    valueInputOption: 'USER_ENTERED',
-    insertDataOption: 'INSERT_ROWS',
-    requestBody: { values },
-  });
-}
-
-export async function actualizarProveedor(
-  idAntiguo: string,
-  proveedor: ProveedorNuevo
-): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "'proveedores'!A:Z",
-  });
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    throw new Error('Proveedor no encontrado');
-  }
-
-  const headers = rows[0] as string[];
-  const findCol = (names: string[]) => {
-    for (const name of names) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === name.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idCol = findCol(['id', 'idproveedor', 'id proveedor', 'codigo', 'código']);
-  if (idCol < 0) {
-    throw new Error(`Columna id no encontrada. Columnas disponibles: ${JSON.stringify(headers)}`);
-  }
-
-  const rowIndex = rows.findIndex(
-    (row, i) => i > 0 && String(row[idCol] ?? '').trim().toLowerCase() === idAntiguo.trim().toLowerCase()
-  );
-  if (rowIndex < 0) {
-    throw new Error('Proveedor no encontrado');
-  }
-
-  const sheetRow = rowIndex + 1;
-  const range = `'proveedores'!A${sheetRow}:F${sheetRow}`;
-  const values = [
-    [
-      proveedor.idproveedor,
-      proveedor.nombre,
-      proveedor.telefono ?? '',
-      proveedor.email ?? '',
-      proveedor.direccion ?? '',
-      proveedor.contacto ?? '',
-    ],
-  ];
-
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range,
-    valueInputOption: 'USER_ENTERED',
-    requestBody: { values },
-  });
-}
-
-export async function eliminarProveedor(id: string): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
-  const proveedoresSheet = spreadsheet.data.sheets?.find(
-    (s) => s.properties?.title?.toLowerCase() === 'proveedores'
-  );
-  const sheetId = proveedoresSheet?.properties?.sheetId;
-  if (sheetId === undefined) {
-    throw new Error('No se encontró la hoja proveedores');
-  }
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "'proveedores'!A:Z",
-  });
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    throw new Error('Proveedor no encontrado');
-  }
-
-  const headers = rows[0] as string[];
-  const findCol = (names: string[]) => {
-    for (const name of names) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === name.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idCol = findCol(['id', 'idproveedor', 'id proveedor', 'codigo', 'código']);
-  if (idCol < 0) {
-    throw new Error(`Columna id no encontrada. Columnas disponibles: ${JSON.stringify(headers)}`);
-  }
-
-  const rowIndex = rows.findIndex(
-    (row, i) => i > 0 && String(row[idCol] ?? '').trim().toLowerCase() === id.trim().toLowerCase()
-  );
-  if (rowIndex < 0) {
-    throw new Error('Proveedor no encontrado');
-  }
-
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: {
-      requests: [
-        {
-          deleteDimension: {
-            range: {
-              sheetId,
-              dimension: 'ROWS',
-              startIndex: rowIndex,
-              endIndex: rowIndex + 1,
-            },
-          },
-        },
-      ],
-    },
-  });
-}
-
-// ─── Compras ─────────────────────────────────────────────────────────────────
-
-/**
- * Obtiene todas las compras de la pestaña 'compras'.
+ * Obtiene todas las compras de la pestaÃ±a 'compras'.
  * Columnas: idcompra, fecha, proveedor, idarticulo, articulo, cantidad, total
  */
 export async function getCompras(): Promise<CompraList[]> {
@@ -1133,7 +445,7 @@ export async function getCompras(): Promise<CompraList[]> {
         articulos = JSON.parse(articuloRaw) as ArticuloCompra[];
         if (!Array.isArray(articulos)) articulos = undefined;
       } catch {
-        /* Si el JSON no es válido, se trata como articulo legacy */
+        /* Si el JSON no es vÃ¡lido, se trata como articulo legacy */
       }
     }
 
@@ -1165,7 +477,7 @@ export async function generarSiguienteIdCompra(): Promise<string> {
 export interface CompraNueva {
   fecha: string;
   proveedor: string;
-  factura?: string; // número de factura
+  factura?: string; // nÃºmero de factura
   articulos: ArticuloCompra[];
   total: number; // total de la compra
 }
@@ -1187,7 +499,7 @@ export async function insertarCompra(compra: CompraNueva): Promise<void> {
       articuloJson,
       0, // cantidad (legacy)
       compra.total,
-      factura, // número de factura (columna H)
+      factura, // nÃºmero de factura (columna H)
     ],
   ];
 
@@ -1297,7 +609,7 @@ export async function eliminarCompra(idcompra: string): Promise<void> {
   );
   const sheetId = comprasSheet?.properties?.sheetId;
   if (sheetId === undefined) {
-    throw new Error('No se encontró la hoja compras');
+    throw new Error('No se encontrÃ³ la hoja compras');
   }
 
   const response = await sheets.spreadsheets.values.get({
@@ -1345,263 +657,3 @@ export async function eliminarCompra(idcompra: string): Promise<void> {
   });
 }
 
-// ─── Clientes ─────────────────────────────────────────────────────────────────
-
-/**
- * Obtiene todos los datos de la pestaña 'clientes'.
- * Columnas: idcliente, nombre, telefono, email, direccion, fechaCreacion
- */
-export async function getClientes(): Promise<Cliente[]> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "'clientes'!A:Z",
-    valueRenderOption: 'FORMATTED_VALUE',
-  });
-
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    return [];
-  }
-
-  const headers = rows[0] as string[];
-  const headerIndex = (keys: string[]) => {
-    for (const key of keys) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === key.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const fechaCreacionIdx = headerIndex([
-    'fechacreacion',
-    'fecha creacion',
-    'fecha_creacion',
-    'fecha alta',
-    'fecha',
-    'fechacrea',
-    'creado',
-    'created',
-  ]);
-  const claveIdx = headerIndex(['clave', 'password', 'contraseña']);
-  const idx = {
-    id: headerIndex(['id', 'idcliente', 'id cliente', 'codigo', 'código']),
-    nombre: headerIndex(['nombre']),
-    telefono: headerIndex(['telefono', 'teléfono', 'phone']),
-    email: headerIndex(['email', 'correo', 'e-mail']),
-    direccion: headerIndex(['direccion', 'dirección', 'dir', 'address']),
-    fechaCreacion: fechaCreacionIdx >= 0 ? fechaCreacionIdx : 5,
-    clave: claveIdx >= 0 ? claveIdx : -1,
-  };
-
-  return rows.slice(1).map((row) => {
-    const get = (i: number) => (i >= 0 && row[i] !== undefined ? String(row[i]).trim() : '');
-    const getFecha = (i: number): string => {
-      if (i < 0 || row[i] === undefined || row[i] === '') return '';
-      const val = row[i];
-      if (typeof val === 'number' && val > 25569 && val < 100000) {
-        const date = new Date((val - 25569) * 86400 * 1000);
-        return date.toISOString().split('T')[0];
-      }
-      return String(val ?? '').trim();
-    };
-    return {
-      idcliente: idx.id >= 0 ? get(idx.id) : '',
-      nombre: get(idx.nombre),
-      telefono: idx.telefono >= 0 ? get(idx.telefono) || undefined : undefined,
-      email: idx.email >= 0 ? get(idx.email) || undefined : undefined,
-      direccion: idx.direccion >= 0 ? get(idx.direccion) || undefined : undefined,
-      fechaCreacion: getFecha(idx.fechaCreacion),
-      clave: idx.clave >= 0 ? get(idx.clave) || undefined : undefined,
-    } satisfies Cliente;
-  });
-}
-
-export interface ClienteNuevo {
-  idcliente: string;
-  nombre: string;
-  telefono?: string;
-  email?: string;
-  direccion?: string;
-  fechaCreacion: string;
-  /** Hash bcrypt de la contraseña (solo para registro de usuarios) */
-  clave?: string;
-}
-
-export async function clienteExiste(id: string): Promise<boolean> {
-  const clientes = await getClientes();
-  const buscado = id.trim().toLowerCase();
-  return clientes.some((c) => c.idcliente.trim().toLowerCase() === buscado);
-}
-
-/** Busca un cliente por email (case-insensitive). */
-export async function getClientePorEmail(email: string): Promise<Cliente | null> {
-  const clientes = await getClientes();
-  const buscado = email.trim().toLowerCase();
-  return clientes.find((c) => (c.email ?? '').trim().toLowerCase() === buscado) ?? null;
-}
-
-/** Verifica si ya existe un cliente con ese email. */
-export async function clienteExistePorEmail(email: string): Promise<boolean> {
-  const c = await getClientePorEmail(email);
-  return c !== null;
-}
-
-export async function generarSiguienteIdCliente(): Promise<string> {
-  const clientes = await getClientes();
-  let max = 0;
-  for (const c of clientes) {
-    const n = parseInt(c.idcliente, 10);
-    if (!Number.isNaN(n) && n > max) max = n;
-  }
-  return String(max + 1);
-}
-
-export async function insertarCliente(cliente: ClienteNuevo): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const values = [
-    [
-      cliente.idcliente,
-      cliente.nombre,
-      cliente.telefono ?? '',
-      cliente.email ?? '',
-      cliente.direccion ?? '',
-      cliente.fechaCreacion,
-      cliente.clave ?? '',
-    ],
-  ];
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range: "'clientes'!A:G",
-    valueInputOption: 'USER_ENTERED',
-    insertDataOption: 'INSERT_ROWS',
-    requestBody: { values },
-  });
-}
-
-export async function actualizarCliente(
-  idAntiguo: string,
-  cliente: ClienteNuevo
-): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "'clientes'!A:Z",
-  });
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    throw new Error('Cliente no encontrado');
-  }
-
-  const headers = rows[0] as string[];
-  const findCol = (names: string[]) => {
-    for (const name of names) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === name.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idCol = findCol(['id', 'idcliente', 'id cliente', 'codigo', 'código']);
-  if (idCol < 0) {
-    throw new Error(`Columna id no encontrada. Columnas disponibles: ${JSON.stringify(headers)}`);
-  }
-
-  const rowIndex = rows.findIndex(
-    (row, i) => i > 0 && String(row[idCol] ?? '').trim().toLowerCase() === idAntiguo.trim().toLowerCase()
-  );
-  if (rowIndex < 0) {
-    throw new Error('Cliente no encontrado');
-  }
-
-  const claveCol = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === 'clave');
-  const claveExistente = claveCol >= 0 && rows[rowIndex][claveCol] ? String(rows[rowIndex][claveCol]).trim() : '';
-  const claveFinal = cliente.clave !== undefined ? cliente.clave : claveExistente;
-
-  const sheetRow = rowIndex + 1;
-  const range = `'clientes'!A${sheetRow}:G${sheetRow}`;
-  const values = [
-    [
-      cliente.idcliente,
-      cliente.nombre,
-      cliente.telefono ?? '',
-      cliente.email ?? '',
-      cliente.direccion ?? '',
-      cliente.fechaCreacion,
-      claveFinal,
-    ],
-  ];
-
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range,
-    valueInputOption: 'USER_ENTERED',
-    requestBody: { values },
-  });
-}
-
-export async function eliminarCliente(id: string): Promise<void> {
-  const sheets = await getGoogleSheetsClient();
-  const spreadsheetId = getSpreadsheetId();
-
-  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
-  const clientesSheet = spreadsheet.data.sheets?.find(
-    (s) => s.properties?.title?.toLowerCase() === 'clientes'
-  );
-  const sheetId = clientesSheet?.properties?.sheetId;
-  if (sheetId === undefined) {
-    throw new Error('No se encontró la hoja clientes');
-  }
-
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: "'clientes'!A:Z",
-  });
-  const rows = response.data.values;
-  if (!rows || rows.length < 2) {
-    throw new Error('Cliente no encontrado');
-  }
-
-  const headers = rows[0] as string[];
-  const findCol = (names: string[]) => {
-    for (const name of names) {
-      const i = headers.findIndex((h) => String(h ?? '').trim().toLowerCase() === name.toLowerCase());
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-  const idCol = findCol(['id', 'idcliente', 'id cliente', 'codigo', 'código']);
-  if (idCol < 0) {
-    throw new Error(`Columna id no encontrada. Columnas disponibles: ${JSON.stringify(headers)}`);
-  }
-
-  const rowIndex = rows.findIndex(
-    (row, i) => i > 0 && String(row[idCol] ?? '').trim().toLowerCase() === id.trim().toLowerCase()
-  );
-  if (rowIndex < 0) {
-    throw new Error('Cliente no encontrado');
-  }
-
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: {
-      requests: [
-        {
-          deleteDimension: {
-            range: {
-              sheetId,
-              dimension: 'ROWS',
-              startIndex: rowIndex,
-              endIndex: rowIndex + 1,
-            },
-          },
-        },
-      ],
-    },
-  });
-}
