@@ -132,6 +132,112 @@ function ModalVerVenta({
   );
 }
 
+function getDescripcionArticulos(v: VentaList) {
+  return v.articulos?.length
+    ? v.articulos
+        .map((a) =>
+          a.cantidad > 0
+            ? `${a.nombre} (${a.cantidad} × ${formatPrecio(a.total / a.cantidad)})`
+            : a.nombre
+        )
+        .join(" · ")
+    : v.nombre || "-";
+}
+
+function getEstadoEntregado(v: VentaList) {
+  const ent = (v.entregado ?? "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(ent)) {
+    return {
+      label: `Entregado - ${ent}`,
+      textClass: "text-green-600",
+      badgeClass: "bg-green-50 text-green-700",
+    };
+  }
+  if ((v.entregado ?? "").toLowerCase() === "pendiente" || !v.entregado) {
+    return {
+      label: "Nuevo pedido",
+      textClass: "text-red-600",
+      badgeClass: "bg-red-50 text-red-700",
+    };
+  }
+  return {
+    label: v.entregado ?? "",
+    textClass: "text-amber-600",
+    badgeClass: "bg-amber-50 text-amber-700",
+  };
+}
+
+interface VentaAccionesProps {
+  venta: VentaList;
+  onVer: (v: VentaList) => void;
+  onEditar: (v: VentaList) => void;
+  onWhatsapp: (v: VentaList) => void;
+  onEliminar: (id: string) => void;
+  whatsappBusy: string | null;
+  descargaJpgBusy: string | null;
+  eliminando: string | null;
+  compact?: boolean;
+}
+
+function VentaAcciones({
+  venta,
+  onVer,
+  onEditar,
+  onWhatsapp,
+  onEliminar,
+  whatsappBusy,
+  descargaJpgBusy,
+  eliminando,
+  compact = false,
+}: VentaAccionesProps) {
+  const btnClass = compact
+    ? "inline-flex h-9 w-9 items-center justify-center rounded-lg"
+    : "inline-flex h-8 w-8 items-center justify-center rounded-lg sm:h-9 sm:w-9";
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onVer(venta)}
+        className={`${btnClass} bg-slate-100 text-slate-700 hover:bg-slate-200`}
+        title="Ver detalle"
+        aria-label="Ver detalle"
+      >
+        <IconoVer />
+      </button>
+      <button
+        type="button"
+        onClick={() => onEditar(venta)}
+        className={`${btnClass} bg-green-50 text-green-700 hover:bg-green-100`}
+        title="Editar venta"
+        aria-label="Editar venta"
+      >
+        <IconoEditar />
+      </button>
+      <button
+        type="button"
+        onClick={() => onWhatsapp(venta)}
+        disabled={whatsappBusy === venta.idventa || descargaJpgBusy === venta.idventa}
+        className={`${btnClass} bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50`}
+        title="Enviar boleta por WhatsApp (JPG)"
+        aria-label="Enviar boleta por WhatsApp"
+      >
+        {whatsappBusy === venta.idventa ? <IconoCargando /> : <IconoWhatsApp />}
+      </button>
+      <button
+        type="button"
+        onClick={() => onEliminar(venta.idventa)}
+        disabled={eliminando === venta.idventa}
+        className={`${btnClass} bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50`}
+        title="Eliminar venta"
+        aria-label="Eliminar venta"
+      >
+        {eliminando === venta.idventa ? <IconoCargando /> : <IconoEliminar />}
+      </button>
+    </>
+  );
+}
+
 interface ListVentasProps {
   ventas: VentaList[];
   onMutate?: () => void;
@@ -406,29 +512,31 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
             descargaJpgBusy={descargaJpgBusy}
           />
         )}
-        <div className="mb-4 flex flex-col sm:flex-row gap-4 flex-wrap">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             <label className="text-sm font-medium text-slate-700">Consulta por fecha:</label>
-            <input
-              type="date"
-              value={fechaDesde}
-              onChange={(e) => setFechaDesde(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              placeholder="Desde"
-            />
-            <span className="text-slate-500">—</span>
-            <input
-              type="date"
-              value={fechaHasta}
-              onChange={(e) => setFechaHasta(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              placeholder="Hasta"
-            />
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:flex sm:flex-wrap">
+              <input
+                type="date"
+                value={fechaDesde}
+                onChange={(e) => setFechaDesde(e.target.value)}
+                className="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                placeholder="Desde"
+              />
+              <span className="text-slate-500 text-center">—</span>
+              <input
+                type="date"
+                value={fechaHasta}
+                onChange={(e) => setFechaHasta(e.target.value)}
+                className="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                placeholder="Hasta"
+              />
+            </div>
             {(fechaDesde || fechaHasta) && (
               <button
                 type="button"
                 onClick={() => { setFechaDesde(""); setFechaHasta(""); }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 w-fit"
               >
                 Reset fechas
               </button>
@@ -439,69 +547,136 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
             placeholder="Filtrar por id, fecha, cliente, artículos..."
-            className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 sm:max-w-xs"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 sm:max-w-xs"
           />
-          <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
-            <input
-              type="checkbox"
-              checked={ocultarPendiente}
-              onChange={(e) => setOcultarPendiente(e.target.checked)}
-              className="rounded border-slate-300 text-red-600 focus:ring-red-500"
-            />
-            Ocultar Nuevo pedido
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
-            <input
-              type="checkbox"
-              checked={ocultarEntregadas}
-              onChange={(e) => setOcultarEntregadas(e.target.checked)}
-              className="rounded border-slate-300 text-red-600 focus:ring-red-500"
-            />
-            Ocultar entregadas
-          </label>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={ocultarPendiente}
+                onChange={(e) => setOcultarPendiente(e.target.checked)}
+                className="rounded border-slate-300 text-red-600 focus:ring-red-500"
+              />
+              Ocultar Nuevo pedido
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={ocultarEntregadas}
+                onChange={(e) => setOcultarEntregadas(e.target.checked)}
+                className="rounded border-slate-300 text-red-600 focus:ring-red-500"
+              />
+              Ocultar entregadas
+            </label>
+          </div>
         </div>
-        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-3 py-3 sm:px-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
           <span className="text-sm font-medium text-red-800">
             {ventasFiltradas.length} venta{ventasFiltradas.length !== 1 ? "s" : ""} mostrada{ventasFiltradas.length !== 1 ? "s" : ""}
             {(fechaDesde || fechaHasta || filtro.trim() || ocultarPendiente || ocultarEntregadas) && " (filtradas)"}
           </span>
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-lg font-bold text-red-700">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <span className="text-base sm:text-lg font-bold text-red-700">
               Total: {formatPrecio(totalVentasFiltradas)}
             </span>
             <button
               type="button"
               onClick={descargarExcel}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+              className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 sm:px-4"
             >
               Descargar a Excel
             </button>
           </div>
         </div>
         <div className="rounded-xl shadow-sm border border-slate-200 overflow-hidden bg-white">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px]">
+          <div className="sm:hidden">
+            {ventasFiltradas.length === 0 ? (
+              <p className="px-4 py-12 text-center text-slate-500">
+                {ventas.length === 0
+                  ? "No hay ventas disponibles"
+                  : "Ninguna venta coincide con el filtro o rango de fechas"}
+              </p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {ventasFiltradas.map((v, i) => {
+                  const descripcionArticulos = getDescripcionArticulos(v);
+                  const estado = getEstadoEntregado(v);
+                  return (
+                    <article
+                      key={v.idventa || `venta-mobile-${i}`}
+                      className="p-3 space-y-2.5"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                            #{v.idventa} · {v.fecha || "-"}
+                          </p>
+                          <p className="mt-0.5 text-sm font-semibold text-slate-800 truncate">
+                            {v.cliente || "Sin cliente"}
+                          </p>
+                        </div>
+                        <p className="shrink-0 text-sm font-bold text-red-700">
+                          {formatPrecio(v.total ?? 0)}
+                        </p>
+                      </div>
+                      <p
+                        className="text-xs leading-relaxed text-slate-600 line-clamp-2"
+                        title={descripcionArticulos}
+                      >
+                        {descripcionArticulos}
+                      </p>
+                      <span
+                        className={`inline-flex max-w-full items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${estado.badgeClass}`}
+                      >
+                        <span className="truncate">{estado.label}</span>
+                      </span>
+                      <div className="flex items-center justify-between gap-2 pt-0.5">
+                        <span className="text-[11px] font-medium text-slate-500">Acciones</span>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          <VentaAcciones
+                            venta={v}
+                            onVer={abrirVer}
+                            onEditar={abrirEditar}
+                            onWhatsapp={(venta) => {
+                              void compartirBoletaWhatsapp(venta);
+                            }}
+                            onEliminar={handleEliminar}
+                            whatsappBusy={whatsappBusy}
+                            descargaJpgBusy={descargaJpgBusy}
+                            eliminando={eliminando}
+                            compact
+                          />
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full">
               <thead>
                 <tr className="bg-red-100">
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     ID Venta
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Fecha
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Cliente
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Artículos
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Total
                   </th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Entregado
                   </th>
-                  <th className="w-[100px] min-w-[100px] px-2 py-3 text-left text-xs font-semibold text-red-800 sm:px-5 sm:text-sm max-sm:sticky max-sm:right-0 max-sm:z-20 max-sm:bg-red-100 max-sm:shadow-[-6px_0_10px_-4px_rgba(0,0,0,0.12)]">
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Act
                   </th>
                 </tr>
@@ -520,88 +695,45 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                   </tr>
                 ) : (
                   ventasFiltradas.map((v, i) => {
-                    const descripcionArticulos = v.articulos?.length
-                      ? v.articulos
-                          .map((a) =>
-                            a.cantidad > 0
-                              ? `${a.nombre} (${a.cantidad} × ${formatPrecio(a.total / a.cantidad)})`
-                              : a.nombre
-                          )
-                          .join(" · ")
-                      : v.nombre || "-";
+                    const descripcionArticulos = getDescripcionArticulos(v);
+                    const estado = getEstadoEntregado(v);
                     return (
                       <tr
                         key={v.idventa || `venta-${i}`}
-                        className="group border-t border-slate-100 bg-white hover:bg-red-50/50 transition-colors"
+                        className="border-t border-slate-100 bg-white hover:bg-red-50/50 transition-colors"
                       >
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="px-5 py-4 text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
                           {v.idventa}
                         </td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="px-5 py-4 text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
                           {v.fecha}
                         </td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="px-5 py-4 text-sm text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
                           {v.cliente || "-"}
                         </td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-medium text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis" title={descripcionArticulos}>
+                        <td className="px-5 py-4 text-sm font-medium text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={descripcionArticulos}>
                           {descripcionArticulos}
                         </td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-700 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="px-5 py-4 text-sm text-slate-700 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
                           {formatPrecio(v.total ?? 0)}
                         </td>
-                        <td className={`px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis ${
-                          /^\d{4}-\d{2}-\d{2}$/.test((v.entregado ?? "").trim())
-                            ? "text-green-600"
-                            : (v.entregado ?? "").toLowerCase() === "pendiente" || !v.entregado
-                              ? "text-red-600"
-                              : "text-amber-600"
-                        }`}>
-                          {/^\d{4}-\d{2}-\d{2}$/.test((v.entregado ?? "").trim())
-                            ? `Entregado - ${(v.entregado ?? "").trim()}`
-                            : (v.entregado ?? "").toLowerCase() === "pendiente" || !v.entregado
-                              ? "Nuevo pedido"
-                              : (v.entregado ?? "")}
+                        <td className={`px-5 py-4 text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis ${estado.textClass}`}>
+                          {estado.label}
                         </td>
-                        <td className="w-[100px] min-w-[100px] px-2 py-2 align-middle sm:px-5 sm:py-4 max-sm:sticky max-sm:right-0 max-sm:z-10 max-sm:bg-white max-sm:shadow-[-6px_0_10px_-4px_rgba(0,0,0,0.1)] group-hover:max-sm:bg-red-50/95">
-                          <div className="grid grid-cols-2 gap-1.5 justify-items-center">
-                            <button
-                              type="button"
-                              onClick={() => abrirVer(v)}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 sm:h-9 sm:w-9"
-                              title="Ver detalle"
-                              aria-label="Ver detalle"
-                            >
-                              <IconoVer />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => abrirEditar(v)}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-green-700 hover:bg-green-100 sm:h-9 sm:w-9"
-                              title="Editar venta"
-                              aria-label="Editar venta"
-                            >
-                              <IconoEditar />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => compartirBoletaWhatsapp(v)}
-                              disabled={whatsappBusy === v.idventa || descargaJpgBusy === v.idventa}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 sm:h-9 sm:w-9"
-                              title="Enviar boleta por WhatsApp (JPG)"
-                              aria-label="Enviar boleta por WhatsApp"
-                            >
-                              {whatsappBusy === v.idventa ? <IconoCargando /> : <IconoWhatsApp />}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleEliminar(v.idventa)}
-                              disabled={eliminando === v.idventa}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50 sm:h-9 sm:w-9"
-                              title="Eliminar venta"
-                              aria-label="Eliminar venta"
-                            >
-                              {eliminando === v.idventa ? <IconoCargando /> : <IconoEliminar />}
-                            </button>
+                        <td className="px-5 py-4">
+                          <div className="grid grid-cols-2 gap-1.5 justify-items-center w-[88px]">
+                            <VentaAcciones
+                              venta={v}
+                              onVer={abrirVer}
+                              onEditar={abrirEditar}
+                              onWhatsapp={(venta) => {
+                                void compartirBoletaWhatsapp(venta);
+                              }}
+                              onEliminar={handleEliminar}
+                              whatsappBusy={whatsappBusy}
+                              descargaJpgBusy={descargaJpgBusy}
+                              eliminando={eliminando}
+                            />
                           </div>
                         </td>
                       </tr>

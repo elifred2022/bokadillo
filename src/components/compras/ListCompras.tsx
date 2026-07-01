@@ -118,6 +118,80 @@ interface ListComprasProps {
   onMutate?: () => void;
 }
 
+function getDescripcionArticulos(c: CompraList) {
+  return c.articulos?.length
+    ? c.articulos
+        .map((a) =>
+          a.cantidad > 0
+            ? `${a.nombre} (${a.cantidad} × ${formatPrecio(a.total / a.cantidad)})`
+            : a.nombre
+        )
+        .join(" · ")
+    : c.articulo || "-";
+}
+
+function getFacturaInfo(c: CompraList) {
+  if (c.factura?.trim()) {
+    return {
+      label: c.factura.trim(),
+      badgeClass: "bg-slate-100 text-slate-700",
+    };
+  }
+  return {
+    label: "Sin factura",
+    badgeClass: "bg-amber-50 text-amber-700",
+  };
+}
+
+interface CompraAccionesProps {
+  compra: CompraList;
+  onVer: (c: CompraList) => void;
+  onEditar: (c: CompraList) => void;
+  onEliminar: (id: string) => void;
+  eliminando: string | null;
+  compact?: boolean;
+}
+
+function CompraAcciones({
+  compra,
+  onVer,
+  onEditar,
+  onEliminar,
+  eliminando,
+  compact = false,
+}: CompraAccionesProps) {
+  const btnClass = compact
+    ? "flex-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-center"
+    : "rounded-lg px-2 py-1.5 text-xs font-medium";
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onVer(compra)}
+        className={`${btnClass} bg-slate-100 text-slate-700 hover:bg-slate-200`}
+      >
+        Ver
+      </button>
+      <button
+        type="button"
+        onClick={() => onEditar(compra)}
+        className={`${btnClass} bg-green-50 text-green-700 hover:bg-green-100`}
+      >
+        Editar
+      </button>
+      <button
+        type="button"
+        onClick={() => onEliminar(compra.idcompra)}
+        disabled={eliminando === compra.idcompra}
+        className={`${btnClass} bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50`}
+      >
+        {eliminando === compra.idcompra ? "…" : "Eliminar"}
+      </button>
+    </>
+  );
+}
+
 export default function ListCompras({
   compras,
   proveedores,
@@ -316,34 +390,36 @@ export default function ListCompras({
             }}
           />
         )}
-        <div className="mb-4 flex flex-col sm:flex-row gap-4 flex-wrap">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
           <div className="flex flex-col gap-1">
-            <div className="flex flex-wrap items-center gap-2">
-            <label className="text-sm font-medium text-slate-700">Consulta por fecha:</label>
-            <input
-              type="date"
-              value={fechaDesde}
-              onChange={(e) => setFechaDesde(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              placeholder="Desde"
-            />
-            <span className="text-slate-500">—</span>
-            <input
-              type="date"
-              value={fechaHasta}
-              onChange={(e) => setFechaHasta(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              placeholder="Hasta"
-            />
-            {(fechaDesde || fechaHasta) && (
-              <button
-                type="button"
-                onClick={() => { setFechaDesde(""); setFechaHasta(""); }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-              >
-                Reset consulta
-              </button>
-            )}
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              <label className="text-sm font-medium text-slate-700">Consulta por fecha:</label>
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:flex sm:flex-wrap">
+                <input
+                  type="date"
+                  value={fechaDesde}
+                  onChange={(e) => setFechaDesde(e.target.value)}
+                  className="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  placeholder="Desde"
+                />
+                <span className="text-slate-500 text-center">—</span>
+                <input
+                  type="date"
+                  value={fechaHasta}
+                  onChange={(e) => setFechaHasta(e.target.value)}
+                  className="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-slate-800 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                  placeholder="Hasta"
+                />
+              </div>
+              {(fechaDesde || fechaHasta) && (
+                <button
+                  type="button"
+                  onClick={() => { setFechaDesde(""); setFechaHasta(""); }}
+                  className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 w-fit"
+                >
+                  Reset consulta
+                </button>
+              )}
             </div>
             <p className="text-xs text-slate-600 max-w-xl">
               La tabla solo muestra compras cuando indica al menos una fecha (desde o hasta).
@@ -354,28 +430,30 @@ export default function ListCompras({
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
             placeholder="Filtrar por id, fecha, proveedor, factura, artículos..."
-            className="rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 sm:max-w-xs"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 sm:max-w-xs"
           />
-          <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
-            <input
-              type="checkbox"
-              checked={ocultarSinFactura}
-              onChange={(e) => setOcultarSinFactura(e.target.checked)}
-              className="rounded border-slate-300 text-red-600 focus:ring-red-500"
-            />
-            Ocultar sin factura
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
-            <input
-              type="checkbox"
-              checked={ocultarConFactura}
-              onChange={(e) => setOcultarConFactura(e.target.checked)}
-              className="rounded border-slate-300 text-red-600 focus:ring-red-500"
-            />
-            Ocultar con factura
-          </label>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={ocultarSinFactura}
+                onChange={(e) => setOcultarSinFactura(e.target.checked)}
+                className="rounded border-slate-300 text-red-600 focus:ring-red-500"
+              />
+              Ocultar sin factura
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={ocultarConFactura}
+                onChange={(e) => setOcultarConFactura(e.target.checked)}
+                className="rounded border-slate-300 text-red-600 focus:ring-red-500"
+              />
+              Ocultar con factura
+            </label>
+          </div>
         </div>
-        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-3 py-3 sm:px-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
           <span className="text-sm font-medium text-red-800">
             {comprasFiltradas.length} compra{comprasFiltradas.length !== 1 ? "s" : ""} mostrada{comprasFiltradas.length !== 1 ? "s" : ""}
             {!hayConsultaFecha && " — use la consulta por fecha para listar"}
@@ -383,32 +461,91 @@ export default function ListCompras({
               (fechaDesde || fechaHasta || filtro.trim() || ocultarSinFactura || ocultarConFactura) &&
               " (filtradas)"}
           </span>
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-lg font-bold text-red-700">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <span className="text-base sm:text-lg font-bold text-red-700">
               Total: {formatPrecio(totalComprasFiltradas)}
             </span>
             <button
               type="button"
               onClick={descargarExcel}
               disabled={!hayConsultaFecha}
-              className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-green-600"
+              className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-green-600 sm:px-4"
             >
               Descargar a Excel
             </button>
           </div>
         </div>
         <div className="rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[500px]">
+          <div className="sm:hidden">
+            {comprasFiltradas.length === 0 ? (
+              <p className="px-4 py-12 text-center text-slate-500">
+                {!hayConsultaFecha
+                  ? "Indique al menos una fecha (desde o hasta) para ver las compras en este período."
+                  : compras.length === 0
+                    ? "No hay compras disponibles"
+                    : "Ninguna compra coincide con el filtro o rango de fechas"}
+              </p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {comprasFiltradas.map((c, i) => {
+                  const descripcionArticulos = getDescripcionArticulos(c);
+                  const factura = getFacturaInfo(c);
+                  return (
+                    <article
+                      key={c.idcompra || `compra-mobile-${i}`}
+                      className="p-3 space-y-2.5"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                            #{c.idcompra} · {c.fecha || "-"}
+                          </p>
+                          <p className="mt-0.5 text-sm font-semibold text-slate-800 truncate">
+                            {c.proveedor || "Sin proveedor"}
+                          </p>
+                        </div>
+                        <p className="shrink-0 text-sm font-bold text-red-700">
+                          {formatPrecio(c.total ?? 0)}
+                        </p>
+                      </div>
+                      <p
+                        className="text-xs leading-relaxed text-slate-600 line-clamp-2"
+                        title={descripcionArticulos}
+                      >
+                        {descripcionArticulos}
+                      </p>
+                      <span
+                        className={`inline-flex max-w-full items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${factura.badgeClass}`}
+                      >
+                        <span className="truncate">Factura: {factura.label}</span>
+                      </span>
+                      <div className="flex gap-1.5 pt-0.5">
+                        <CompraAcciones
+                          compra={c}
+                          onVer={abrirVer}
+                          onEditar={abrirEditar}
+                          onEliminar={handleEliminar}
+                          eliminando={eliminando}
+                          compact
+                        />
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full">
               <thead>
                 <tr className="bg-red-100">
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">ID Compra</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Fecha</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Proveedor</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Factura</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Artículos</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Total</th>
-                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Act</th>
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">ID Compra</th>
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">Fecha</th>
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">Proveedor</th>
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">Factura</th>
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">Artículos</th>
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">Total</th>
+                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">Act</th>
                 </tr>
               </thead>
               <tbody>
@@ -427,50 +564,27 @@ export default function ListCompras({
                   </tr>
                 ) : (
                   comprasFiltradas.map((c, i) => {
-                    const descripcionArticulos = c.articulos?.length
-                      ? c.articulos
-                          .map((a) =>
-                            a.cantidad > 0
-                              ? `${a.nombre} (${a.cantidad} × ${formatPrecio(a.total / a.cantidad)})`
-                              : a.nombre
-                          )
-                          .join(" · ")
-                      : c.articulo || "-";
+                    const descripcionArticulos = getDescripcionArticulos(c);
                     return (
                       <tr
                         key={c.idcompra || `compra-${i}`}
                         className="border-t border-slate-100 bg-white transition-colors hover:bg-red-50/50"
                       >
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.idcompra}</td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.fecha}</td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.proveedor}</td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.factura || "-"}</td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-medium text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis" title={descripcionArticulos}>{descripcionArticulos}</td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-700 font-medium whitespace-nowrap overflow-hidden text-ellipsis">{formatPrecio(c.total)}</td>
-                        <td className="px-3 sm:px-5 py-3 sm:py-4 whitespace-nowrap">
+                        <td className="px-5 py-4 text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.idcompra}</td>
+                        <td className="px-5 py-4 text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.fecha}</td>
+                        <td className="px-5 py-4 text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.proveedor}</td>
+                        <td className="px-5 py-4 text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{c.factura || "-"}</td>
+                        <td className="px-5 py-4 text-sm font-medium text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={descripcionArticulos}>{descripcionArticulos}</td>
+                        <td className="px-5 py-4 text-sm text-slate-700 font-medium whitespace-nowrap overflow-hidden text-ellipsis">{formatPrecio(c.total)}</td>
+                        <td className="px-5 py-4 whitespace-nowrap">
                           <div className="flex flex-nowrap gap-1">
-                            <button
-                              type="button"
-                              onClick={() => abrirVer(c)}
-                              className="rounded-lg bg-slate-100 px-2 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-200"
-                            >
-                              Ver
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => abrirEditar(c)}
-                              className="rounded-lg bg-green-50 px-2 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleEliminar(c.idcompra)}
-                              disabled={eliminando === c.idcompra}
-                              className="rounded-lg bg-red-50 px-2 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
-                            >
-                              {eliminando === c.idcompra ? "…" : "Eliminar"}
-                            </button>
+                            <CompraAcciones
+                              compra={c}
+                              onVer={abrirVer}
+                              onEditar={abrirEditar}
+                              onEliminar={handleEliminar}
+                              eliminando={eliminando}
+                            />
                           </div>
                         </td>
                       </tr>
