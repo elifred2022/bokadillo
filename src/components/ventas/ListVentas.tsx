@@ -11,7 +11,7 @@ import FormVentas from "./FormVentas";
 import { generarBoletaVentaJpeg } from "./boletaVentaImagen";
 import { VentaDetalleVentaCard } from "./VentaDetalleVentaCard";
 
-const actIconClass = "h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4";
+const actIconClass = "h-4 w-4 shrink-0";
 
 function IconoVer() {
   return (
@@ -41,7 +41,7 @@ function IconoWhatsApp() {
 function IconoEliminar() {
   return (
     <svg className={actIconClass} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.066-2.091 1.114-2.091 2.293v5.723m7.5 0c.083.655.17 1.31.282 1.96" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.067-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
     </svg>
   );
 }
@@ -191,11 +191,17 @@ function VentaAcciones({
   compact = false,
 }: VentaAccionesProps) {
   const btnClass = compact
-    ? "inline-flex h-9 w-9 items-center justify-center rounded-lg"
-    : "inline-flex h-8 w-8 items-center justify-center rounded-lg sm:h-9 sm:w-9";
+    ? "inline-flex h-10 w-full items-center justify-center rounded-lg"
+    : "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg";
 
   return (
-    <>
+    <div
+      className={
+        compact
+          ? "grid w-full grid-cols-4 gap-2"
+          : "inline-flex items-center gap-1.5"
+      }
+    >
       <button
         type="button"
         onClick={() => onVer(venta)}
@@ -228,13 +234,13 @@ function VentaAcciones({
         type="button"
         onClick={() => onEliminar(venta.idventa)}
         disabled={eliminando === venta.idventa}
-        className={`${btnClass} bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50`}
+        className={`${btnClass} bg-red-600 text-white hover:bg-red-700 disabled:opacity-50`}
         title="Eliminar venta"
         aria-label="Eliminar venta"
       >
         {eliminando === venta.idventa ? <IconoCargando /> : <IconoEliminar />}
       </button>
-    </>
+    </div>
   );
 }
 
@@ -475,7 +481,7 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
 
   return (
     <div className="min-h-screen bg-red-50/80 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-7xl">
         <Link href="/" className="btn-secondary mb-4 sm:mb-6 w-fit">
           ← Volver al inicio
         </Link>
@@ -630,10 +636,8 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                       >
                         <span className="truncate">{estado.label}</span>
                       </span>
-                      <div className="flex items-center justify-between gap-2 pt-0.5">
-                        <span className="text-[11px] font-medium text-slate-500">Acciones</span>
-                        <div className="grid grid-cols-4 gap-1.5">
-                          <VentaAcciones
+                      <div className="pt-1">
+                        <VentaAcciones
                             venta={v}
                             onVer={abrirVer}
                             onEditar={abrirEditar}
@@ -646,7 +650,6 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                             eliminando={eliminando}
                             compact
                           />
-                        </div>
                       </div>
                     </article>
                   );
@@ -655,29 +658,29 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
             )}
           </div>
           <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[960px]">
               <thead>
                 <tr className="bg-red-100">
-                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-3 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     ID Venta
                   </th>
-                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-3 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Fecha
                   </th>
-                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-3 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Cliente
                   </th>
-                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-3 py-3 text-left text-sm font-semibold text-red-800">
                     Artículos
                   </th>
-                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-3 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Total
                   </th>
-                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
+                  <th className="px-3 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
                     Entregado
                   </th>
-                  <th className="px-5 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap">
-                    Act
+                  <th className="sticky right-0 z-10 bg-red-100 px-3 py-3 text-left text-sm font-semibold text-red-800 whitespace-nowrap shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.15)]">
+                    Acciones
                   </th>
                 </tr>
               </thead>
@@ -700,41 +703,39 @@ export default function ListVentas({ ventas, onMutate }: ListVentasProps) {
                     return (
                       <tr
                         key={v.idventa || `venta-${i}`}
-                        className="border-t border-slate-100 bg-white hover:bg-red-50/50 transition-colors"
+                        className="group border-t border-slate-100 bg-white hover:bg-red-50/50 transition-colors"
                       >
-                        <td className="px-5 py-4 text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="px-3 py-3 text-sm text-slate-600 whitespace-nowrap">
                           {v.idventa}
                         </td>
-                        <td className="px-5 py-4 text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="px-3 py-3 text-sm text-slate-600 whitespace-nowrap">
                           {v.fecha}
                         </td>
-                        <td className="px-5 py-4 text-sm text-slate-700 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="px-3 py-3 text-sm text-slate-700 whitespace-nowrap">
                           {v.cliente || "-"}
                         </td>
-                        <td className="px-5 py-4 text-sm font-medium text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis max-w-[280px]" title={descripcionArticulos}>
+                        <td className="px-3 py-3 text-sm font-medium text-slate-800 max-w-[240px] truncate" title={descripcionArticulos}>
                           {descripcionArticulos}
                         </td>
-                        <td className="px-5 py-4 text-sm text-slate-700 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                        <td className="px-3 py-3 text-sm text-slate-700 font-medium whitespace-nowrap">
                           {formatPrecio(v.total ?? 0)}
                         </td>
-                        <td className={`px-5 py-4 text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis ${estado.textClass}`}>
+                        <td className={`px-3 py-3 text-sm font-medium whitespace-nowrap ${estado.textClass}`}>
                           {estado.label}
                         </td>
-                        <td className="px-5 py-4">
-                          <div className="grid grid-cols-2 gap-1.5 justify-items-center w-[88px]">
-                            <VentaAcciones
-                              venta={v}
-                              onVer={abrirVer}
-                              onEditar={abrirEditar}
-                              onWhatsapp={(venta) => {
-                                void compartirBoletaWhatsapp(venta);
-                              }}
-                              onEliminar={handleEliminar}
-                              whatsappBusy={whatsappBusy}
-                              descargaJpgBusy={descargaJpgBusy}
-                              eliminando={eliminando}
-                            />
-                          </div>
+                        <td className="sticky right-0 z-10 bg-white px-3 py-3 group-hover:bg-red-50/50 shadow-[-8px_0_8px_-8px_rgba(0,0,0,0.12)]">
+                          <VentaAcciones
+                            venta={v}
+                            onVer={abrirVer}
+                            onEditar={abrirEditar}
+                            onWhatsapp={(venta) => {
+                              void compartirBoletaWhatsapp(venta);
+                            }}
+                            onEliminar={handleEliminar}
+                            whatsappBusy={whatsappBusy}
+                            descargaJpgBusy={descargaJpgBusy}
+                            eliminando={eliminando}
+                          />
                         </td>
                       </tr>
                     );
