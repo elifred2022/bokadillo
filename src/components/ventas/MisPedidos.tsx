@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { VentaList, ArticuloVenta } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
-import FormPedidoUsuario from "./FormPedidoUsuario";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ModalVerPedidoProps {
   venta: VentaList;
@@ -118,9 +119,9 @@ interface MisPedidosProps {
   onMutate?: () => void;
 }
 
-export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
+export default function MisPedidos({ ventas }: MisPedidosProps) {
+  const { usuario } = useAuth();
   const [ventaViendo, setVentaViendo] = useState<VentaList | null>(null);
-  const [mostrarFormPedido, setMostrarFormPedido] = useState(false);
 
   const ventasOrdenadas = [...ventas].sort((a, b) => {
     const fechaA = a.fecha || "";
@@ -135,24 +136,20 @@ export default function MisPedidos({ ventas, onMutate }: MisPedidosProps) {
     <div className="min-h-screen bg-red-50/80 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-xl sm:text-2xl font-semibold text-slate-800">
-            Mis pedidos
-          </h1>
-          <button
-            type="button"
-            onClick={() => setMostrarFormPedido(true)}
-            className="btn-primary w-fit"
-          >
-            + Nuevo pedido
-          </button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-slate-800">
+              Mis pedidos
+            </h1>
+            {usuario?.nombre ? (
+              <p className="mt-1 text-sm text-slate-600">
+                Pedidos de <strong>{usuario.nombre}</strong>
+              </p>
+            ) : null}
+          </div>
+          <Link href="/catalogo" className="btn-primary w-fit">
+            Volver
+          </Link>
         </div>
-
-        {mostrarFormPedido && (
-          <FormPedidoUsuario
-            onCerrar={() => setMostrarFormPedido(false)}
-            onMutate={onMutate}
-          />
-        )}
 
         {ventaViendo && (
           <ModalVerPedido

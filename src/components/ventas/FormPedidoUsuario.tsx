@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import type { ArticuloVenta } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
-
-const ID_ARTICULO_123 = "123";
-const ID_ARTICULO_126 = "126";
-const UMBRAL_TOTAL = 15;
+import {
+  ID_ARTICULO_CANTIDAD_MINIMA,
+  UMBRAL_CANTIDAD_123,
+} from "@/lib/catalogo-cliente";
 
 interface ArticuloDisponible {
   idarticulo: string;
@@ -31,10 +31,7 @@ export default function FormPedidoUsuario({
   const [error, setError] = useState("");
   const [articulos, setArticulos] = useState<ArticuloDisponible[]>([]);
   const [cargandoArticulos, setCargandoArticulos] = useState(true);
-  const [cantidades, setCantidades] = useState<Record<string, number>>({
-    [ID_ARTICULO_123]: 0,
-    [ID_ARTICULO_126]: 0,
-  });
+  const [cantidades, setCantidades] = useState<Record<string, number>>({});
 
   const fechaHoy = () =>
     new Date().toLocaleDateString("en-CA", {
@@ -55,12 +52,12 @@ export default function FormPedidoUsuario({
       });
   }, [articulos, cantidades]);
 
-  const cantidad123 = cantidades[ID_ARTICULO_123] ?? 0;
-  const puedeIncluir123 = cantidad123 >= UMBRAL_TOTAL;
+  const cantidad123 = cantidades[ID_ARTICULO_CANTIDAD_MINIMA] ?? 0;
+  const puedeIncluir123 = cantidad123 >= UMBRAL_CANTIDAD_123;
 
   const lineas = useMemo(() => {
     return lineasCompletas.filter(
-      (l) => l.idarticulo !== ID_ARTICULO_123 || puedeIncluir123
+      (l) => l.idarticulo !== ID_ARTICULO_CANTIDAD_MINIMA || puedeIncluir123
     );
   }, [lineasCompletas, puedeIncluir123]);
 
@@ -71,30 +68,21 @@ export default function FormPedidoUsuario({
       setCargandoArticulos(true);
       setError("");
       try {
-        const [res123, res126] = await Promise.all([
-          fetch(`/api/articulos/buscar?id=${encodeURIComponent(ID_ARTICULO_123)}`),
-          fetch(`/api/articulos/buscar?id=${encodeURIComponent(ID_ARTICULO_126)}`),
-        ]);
-        const data123 = await res123.json();
-        const data126 = await res126.json();
-        const arts: ArticuloDisponible[] = [];
-        const a123 = data123.articulo;
-        const a126 = data126.articulo;
-        if (a126) {
-          arts.push({
-            idarticulo: a126.idarticulo ?? a126.id ?? ID_ARTICULO_126,
-            nombre: a126.nombre ?? `Artículo ${ID_ARTICULO_126}`,
-            precio: a126.precio ?? 0,
-          });
-        }
-        if (a123) {
-          arts.push({
-            idarticulo: a123.idarticulo ?? a123.id ?? ID_ARTICULO_123,
-            nombre: a123.nombre ?? `Artículo ${ID_ARTICULO_123}`,
-            precio: a123.precio ?? 0,
-          });
-        }
+        const res = await fetch("/api/articulos/catalogo-cliente", {
+          cache: "no-store",
+        });
+        const data = await res.json();
+        const arts: ArticuloDisponible[] = (data.articulos ?? []).map(
+          (a: { idarticulo?: string; id?: string; nombre?: string; precio?: number }) => ({
+            idarticulo: String(a.idarticulo ?? a.id ?? ""),
+            nombre: a.nombre ?? "",
+            precio: a.precio ?? 0,
+          })
+        );
         setArticulos(arts);
+        setCantidades(
+          Object.fromEntries(arts.map((a) => [a.idarticulo, 0]))
+        );
       } catch {
         setError("Error al cargar los artículos");
       } finally {
@@ -188,7 +176,7 @@ export default function FormPedidoUsuario({
           </div>
 
           <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
-            El artículo 123 solo se habilita si la cantidad es ≥ {UMBRAL_TOTAL}. Si es menor, no se incluirá en el pedido.
+            El artículo 123 solo se habilita si la cantidad es ≥ {UMBRAL_CANTIDAD_123}. Si es menor, no se incluirá en el pedido.
           </div>
 
           <div>
@@ -199,14 +187,14 @@ export default function FormPedidoUsuario({
               <p className="text-slate-500 text-sm py-4">Cargando artículos…</p>
             ) : articulos.length === 0 ? (
               <p className="text-amber-600 text-sm py-4">
-                No se encontraron los artículos 123 y 126
+                No se encontraron los productos del catálogo
               </p>
             ) : (
               <div className="flex flex-col gap-3">
                 {articulos.map((art) => {
                   const cant = cantidades[art.idarticulo] ?? 0;
-                  const es123 = art.idarticulo === ID_ARTICULO_123;
-                  const habilitado = !es123 || cant >= UMBRAL_TOTAL;
+                  const es123 = art.idarticulo === ID_ARTICULO_CANTIDAD_MINIMA;
+                  const habilitado = !es123 || cant >= UMBRAL_CANTIDAD_123;
                   return (
                     <div
                       key={art.idarticulo}
@@ -225,7 +213,7 @@ export default function FormPedidoUsuario({
                             Precio: {formatPrecio(art.precio)}
                             {es123 && !habilitado && cant > 0 && (
                               <span className="text-amber-600 ml-1">
-                                · Mínimo {UMBRAL_TOTAL} unidades
+                                · Mínimo {UMBRAL_CANTIDAD_123} unidades
                               </span>
                             )}
                           </span>

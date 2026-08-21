@@ -31,7 +31,7 @@ export default function LoginForm() {
 
       if (res.ok && data.success) {
         login(data.cliente);
-        const destino = esAdmin(data.cliente.email) ? "/" : "/mis-pedidos";
+        const destino = esAdmin(data.cliente.email) ? "/" : "/catalogo";
         router.push(destino);
         router.refresh();
         return;
@@ -56,7 +56,7 @@ export default function LoginForm() {
     login(cliente);
     setMostrarRegistro(false);
     setEmailParaRegistro("");
-    const destino = esAdmin(cliente.email) ? "/" : "/mis-pedidos";
+    const destino = esAdmin(cliente.email) ? "/" : "/catalogo";
     router.push(destino);
     router.refresh();
   };

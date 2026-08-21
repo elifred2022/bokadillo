@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import type { Articulo } from "@/lib/types";
 import { formatPrecio } from "@/lib/formato";
 import { contienePalabraCompleta } from "@/lib/filtro";
+import { urlFotoArticulo } from "@/lib/storage/foto-url";
 import FormArticulos from "./FormArticulos";
 
 interface ListaArticulosProps {
@@ -129,6 +130,7 @@ export default function ListaArticulos({ articulos, onMutate }: ListaArticulosPr
             <table className="w-full min-w-[400px]">
               <thead>
                 <tr className="bg-red-100">
+                  <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Foto</th>
                   <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Cod barra</th>
                   <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">ID Artículo</th>
                   <th className="px-3 sm:px-5 py-3 text-left text-xs sm:text-sm font-semibold text-red-800 whitespace-nowrap">Nombre</th>
@@ -141,7 +143,7 @@ export default function ListaArticulos({ articulos, onMutate }: ListaArticulosPr
                 {articulosFiltrados.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-4 py-12 text-center text-slate-500 bg-white"
                     >
                       {articulos.length === 0
@@ -150,11 +152,42 @@ export default function ListaArticulos({ articulos, onMutate }: ListaArticulosPr
                     </td>
                   </tr>
                 ) : (
-                  articulosFiltrados.map((art, i) => (
+                  articulosFiltrados.map((art, i) => {
+                    const fotoUrl = urlFotoArticulo(art.img_path);
+                    return (
                     <tr
                       key={art.idarticulo || `art-${i}`}
                       className="border-t border-slate-100 bg-white hover:bg-red-50/50 transition-colors"
                     >
+                      <td className="px-3 sm:px-5 py-3 sm:py-4">
+                        {fotoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={fotoUrl}
+                            alt={art.nombre}
+                            className="h-10 w-10 rounded-lg border border-slate-200 object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="flex h-10 w-10 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-slate-400"
+                            title="Sin foto"
+                            aria-hidden
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              className="h-5 w-5"
+                            >
+                              <rect x="3" y="5" width="18" height="14" rx="2" />
+                              <circle cx="8.5" cy="10" r="1.5" />
+                              <path d="M21 16.5 16 12l-4.5 4.5L9 14l-6 5" />
+                            </svg>
+                          </div>
+                        )}
+                      </td>
                       <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{art.codbarra}</td>
                       <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm text-slate-600 whitespace-nowrap overflow-hidden text-ellipsis">{art.idarticulo}</td>
                       <td className="px-3 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-medium text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis">{art.nombre}</td>
@@ -180,7 +213,8 @@ export default function ListaArticulos({ articulos, onMutate }: ListaArticulosPr
                         </div>
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>

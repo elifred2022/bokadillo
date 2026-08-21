@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
-import { eliminarArticulo, articuloExiste, articuloExistePorCodbarra, actualizarArticulo } from "@/lib/db/articulos";
+import {
+  eliminarArticulo,
+  articuloExiste,
+  articuloExistePorCodbarra,
+  actualizarArticulo,
+} from "@/lib/db/articulos";
+import {
+  parseArticuloRequest,
+  subirFotoArticulo,
+} from "@/lib/storage/articulos";
 
 export async function GET(
   _request: Request,
@@ -29,11 +38,14 @@ export async function PUT(
         { status: 400 }
       );
     }
-    const body = await request.json();
+    const { body, foto } = await parseArticuloRequest(request);
     const { codbarra, nombre, descripcion, precio, stock } = body;
-    const nuevoId = (body.idarticulo ?? body.id) != null ? String(body.idarticulo ?? body.id).trim() : id;
+    const nuevoId =
+      (body.idarticulo ?? body.id) != null
+        ? String(body.idarticulo ?? body.id).trim()
+        : id;
 
-    if (!nombre?.trim()) {
+    if (!nombre || !String(nombre).trim()) {
       return NextResponse.json(
         { error: "Nombre es obligatorio" },
         { status: 400 }
@@ -61,6 +73,22 @@ export async function PUT(
       }
     }
 
+    let img_path: string | undefined;
+    if (foto) {
+      try {
+        img_path = await subirFotoArticulo(nuevoId, foto);
+      } catch (err) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : typeof err === "object" && err && "message" in err
+              ? String((err as { message: unknown }).message)
+              : "Error al subir la foto";
+        console.error("Error al subir foto de artículo:", err);
+        return NextResponse.json({ error: msg }, { status: 400 });
+      }
+    }
+
     await actualizarArticulo(id, {
       codbarra: codbarra != null ? String(codbarra).trim() : "",
       idarticulo: nuevoId,
@@ -68,10 +96,17 @@ export async function PUT(
       descripcion: descripcion != null ? String(descripcion).trim() : "",
       precio: Number(precio) || 0,
       stock: Number(stock) || 0,
+      ...(img_path !== undefined ? { img_path } : {}),
     });
     return NextResponse.json({ success: true });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : "Error al actualizar";
+    console.error("Error al actualizar artículo:", error);
+    const msg =
+      error instanceof Error
+        ? error.message
+        : typeof error === "object" && error && "message" in error
+          ? String((error as { message: unknown }).message)
+          : "Error al actualizar";
     const status = msg.includes("no encontrado") ? 404 : 500;
     return NextResponse.json({ error: msg }, { status });
   }

@@ -19,16 +19,19 @@ export default function MisPedidosLoader() {
       .then((data) => {
         const todas: VentaList[] = data.ventas ?? [];
         const nombreUsuario = usuario?.nombre?.trim().toLowerCase() ?? "";
-        const filtradas = nombreUsuario
-          ? todas.filter(
-              (v) =>
-                (v.cliente ?? "").trim().toLowerCase() === nombreUsuario
-            )
-          : [];
+        const idUsuario = usuario?.idcliente?.trim() ?? "";
+        const filtradas = todas.filter((v) => {
+          const idVenta = (v.idcliente ?? "").trim();
+          if (idUsuario && idVenta && idVenta === idUsuario) return true;
+          if (nombreUsuario) {
+            return (v.cliente ?? "").trim().toLowerCase() === nombreUsuario;
+          }
+          return false;
+        });
         setVentas(filtradas);
       })
       .catch((err) => setError(err.message ?? "Error de conexión"));
-  }, [usuario?.nombre]);
+  }, [usuario?.nombre, usuario?.idcliente]);
 
   useEffect(() => {
     if (!usuario) return;

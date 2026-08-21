@@ -27,6 +27,7 @@ function rowToArticulo(row: Record<string, unknown>): Articulo {
     stock: Number(row.stock) || 0,
     categoria:
       row.categoria != null ? asStr(row.categoria) || undefined : undefined,
+    img_path: asStr(row.img_path) || undefined,
   };
 }
 
@@ -35,7 +36,7 @@ function articuloToDbRow(articulo: ArticuloNuevo) {
   if (idVal === null) {
     throw new Error("ID artículo inválido");
   }
-  return {
+  const row: Record<string, unknown> = {
     codbarra: toDbScalar(articulo.codbarra),
     idarticulo: idVal,
     nombre: articulo.nombre.trim(),
@@ -43,9 +44,13 @@ function articuloToDbRow(articulo: ArticuloNuevo) {
     precio: articulo.precio,
     stock: articulo.stock,
   };
+  if (articulo.img_path !== undefined) {
+    row.img_path = articulo.img_path?.trim() || null;
+  }
+  return row;
 }
 
-async function getArticuloById(idarticulo: string): Promise<Articulo | null> {
+export async function getArticuloById(idarticulo: string): Promise<Articulo | null> {
   const idVal = toDbScalar(idarticulo);
   if (idVal === null) return null;
 
@@ -135,6 +140,15 @@ export async function actualizarArticulo(
   if (error) throw error;
   if (!data?.length) {
     throw new Error("Artículo no encontrado");
+  }
+
+  if (
+    articulo.img_path &&
+    existente.img_path &&
+    articulo.img_path !== existente.img_path
+  ) {
+    const { borrarFotoArticulo } = await import("@/lib/storage/articulos");
+    await borrarFotoArticulo(existente.img_path).catch(() => {});
   }
 }
 
@@ -256,6 +270,8 @@ export async function eliminarArticulo(id: string): Promise<void> {
     throw new Error("Artículo no encontrado");
   }
 
+  const existente = await getArticuloById(id);
+
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("articulos")
@@ -266,5 +282,10 @@ export async function eliminarArticulo(id: string): Promise<void> {
   if (error) throw error;
   if (!data?.length) {
     throw new Error("Artículo no encontrado");
+  }
+
+  if (existente?.img_path) {
+    const { borrarFotoArticulo } = await import("@/lib/storage/articulos");
+    await borrarFotoArticulo(existente.img_path).catch(() => {});
   }
 }

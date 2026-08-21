@@ -8,6 +8,7 @@ export interface Articulo {
   precio: number;
   stock: number;
   categoria?: string;
+  img_path?: string;
 }
 
 export interface ArticuloNuevo {
@@ -17,6 +18,7 @@ export interface ArticuloNuevo {
   descripcion?: string;
   precio: number;
   stock: number;
+  img_path?: string | null;
 }
 
 /** Artículo individual dentro de una venta (array en campo nombre) */
@@ -47,6 +49,7 @@ export interface VentaList {
   precioUnitario?: number;
   total: number;
   entregado: string;
+  idcliente?: string;
 }
 
 export type VentaUpdatePayload = Partial<Omit<VentaList, "idventa">> & {

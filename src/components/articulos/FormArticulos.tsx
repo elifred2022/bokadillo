@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { Articulo } from "@/lib/types";
+import { urlFotoArticulo } from "@/lib/storage/foto-url";
 
 interface FormArticulosProps {
   onCerrar: () => void;
@@ -27,6 +28,10 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
     precio: articulo?.precio?.toString() ?? "",
     stock: articulo?.stock?.toString() ?? "",
   });
+  const [foto, setFoto] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    urlFotoArticulo(articulo?.img_path)
+  );
 
   useEffect(() => {
     if (articulo) {
@@ -38,10 +43,19 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
         precio: articulo.precio.toString(),
         stock: articulo.stock.toString(),
       });
+      setFoto(null);
+      setPreviewUrl(urlFotoArticulo(articulo.img_path));
       setCodigoExiste(false);
       setCodbarraExiste(false);
     }
   }, [articulo]);
+
+  useEffect(() => {
+    if (!foto) return;
+    const url = URL.createObjectURL(foto);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [foto]);
 
   const verificarCodigo = useCallback(
     async (id: string) => {
@@ -144,10 +158,18 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
         ? `/api/articulos/${encodeURIComponent(articulo!.idarticulo)}`
         : "/api/articulos";
       const method = esEdicion ? "PUT" : "POST";
+      const fd = new FormData();
+      fd.append("codbarra", payload.codbarra);
+      fd.append("idarticulo", payload.idarticulo);
+      fd.append("nombre", payload.nombre);
+      fd.append("descripcion", payload.descripcion ?? "");
+      fd.append("precio", String(payload.precio));
+      fd.append("stock", String(payload.stock));
+      if (foto) fd.append("foto", foto);
+
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: fd,
       });
 
       const data = await res.json();
@@ -159,6 +181,8 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
       onCerrar();
       onMutate?.() ?? router.refresh();
       setFormData({ codbarra: "", idarticulo: "", nombre: "", descripcion: "", precio: "", stock: "" });
+      setFoto(null);
+      setPreviewUrl(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar");
     } finally {
@@ -168,7 +192,7 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-800">
             {esEdicion ? "Editar artículo" : "Crear nuevo artículo"}
@@ -328,6 +352,66 @@ export default function FormArticulos({ onCerrar, articulo, onMutate }: FormArti
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                 placeholder="0"
               />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="foto"
+              className="mb-1 block text-sm font-medium text-slate-700"
+            >
+              Foto del artículo
+            </label>
+            <div className="flex items-center gap-3">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                {previewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={previewUrl}
+                    alt="Vista previa"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    className="h-7 w-7 text-slate-400"
+                    aria-hidden
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <circle cx="8.5" cy="10" r="1.5" />
+                    <path d="M21 16.5 16 12l-4.5 4.5L9 14l-6 5" />
+                  </svg>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <input
+                  id="foto"
+                  name="foto"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={(e) => {
+                    setError("");
+                    const file = e.target.files?.[0] ?? null;
+                    if (file && file.size > 5 * 1024 * 1024) {
+                      setError("La foto no puede superar 5 MB");
+                      e.target.value = "";
+                      return;
+                    }
+                    setFoto(file);
+                    if (!file) {
+                      setPreviewUrl(urlFotoArticulo(articulo?.img_path));
+                    }
+                  }}
+                  className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-red-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-red-700 hover:file:bg-red-100"
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  JPG, PNG, WEBP o GIF. Máx. 5 MB.
+                </p>
+              </div>
             </div>
           </div>
 

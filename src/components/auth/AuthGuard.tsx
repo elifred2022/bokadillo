@@ -34,7 +34,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
     if (!isAdmin && esRutaAdmin(pathname)) {
-      router.replace("/mis-pedidos");
+      router.replace("/catalogo");
     }
   }, [cargando, estaAutenticado, isAdmin, esRutaLogin, pathname, router]);
 
@@ -61,19 +61,27 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!isAdmin && esRutaAdmin(pathname)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-red-50/80">
-        <div className="text-slate-600">Redirigiendo a tus pedidos…</div>
+        <div className="text-slate-600">Redirigiendo al catálogo…</div>
       </div>
     );
   }
 
-  const linkInicio = isAdmin ? "/" : "/mis-pedidos";
+  const linkInicio = isAdmin ? "/" : "/catalogo";
 
   return (
     <div className="flex min-h-screen flex-col">
       <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-          <a href={linkInicio} className="text-lg font-semibold text-slate-800">
-            Bokadillo
+          <a href={linkInicio} className="leading-tight">
+            <span className="block text-lg font-semibold text-slate-800">
+              Bokadillo
+            </span>
+            <span className="block text-xs font-medium text-slate-500">
+              @bokadillosweb
+            </span>
+            <span className="block text-xs font-medium text-slate-500">
+              Tlf 1127003907
+            </span>
           </a>
           <HeaderAuth />
         </div>

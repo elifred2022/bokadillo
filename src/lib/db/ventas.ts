@@ -96,6 +96,7 @@ function rowToVenta(row: Record<string, unknown>): VentaList {
     precioUnitario,
     total,
     entregado: asStr(row.entregado) || "pendiente",
+    idcliente: asStr(row.idcliente) || undefined,
   };
 }
 
@@ -256,16 +257,31 @@ export async function generarSiguienteIdVenta(): Promise<string> {
 
 export async function insertarVenta(venta: Venta): Promise<void> {
   const supabase = createAdminClient();
-  const { error } = await supabase.from("ventas").insert(
-    ventaToDbRow({
-      articulos: venta.articulos,
-      total: venta.total,
-      cliente: venta.cliente,
-      idcliente: venta.idcliente,
-      entregado: venta.entregado ?? "pendiente",
-      fecha: venta.fecha,
-    })
-  );
+  const row = ventaToDbRow({
+    articulos: venta.articulos,
+    total: venta.total,
+    cliente: venta.cliente,
+    idcliente: venta.idcliente,
+    entregado: venta.entregado ?? "pendiente",
+    fecha: venta.fecha,
+  });
 
-  if (error) throw error;
+  // La secuencia bigserial queda atrás si se migraron filas con id explícito.
+  // Asignamos MAX(id)+1 para no chocar con ventas_pkey.
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const nextId = Number(await generarSiguienteIdVenta());
+    const { error } = await supabase.from("ventas").insert({
+      ...row,
+      id: nextId,
+    });
+    if (!error) return;
+    lastError = error;
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String((error as { code?: unknown }).code)
+        : "";
+    if (code !== "23505") throw error;
+  }
+  throw lastError;
 }
