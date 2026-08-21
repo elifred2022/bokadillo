@@ -107,10 +107,11 @@ export async function getClientePorEmail(email: string): Promise<Cliente | null>
     .from("clientes")
     .select("*")
     .ilike("email", buscado)
-    .maybeSingle();
+    .limit(1);
 
   if (error) throw error;
-  return data ? rowToCliente(data) : null;
+  const row = data?.[0];
+  return row ? rowToCliente(row) : null;
 }
 
 export async function clienteExistePorEmail(email: string): Promise<boolean> {

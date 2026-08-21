@@ -9,6 +9,7 @@ import {
   parseArticuloRequest,
   subirFotoArticulo,
 } from "@/lib/storage/articulos";
+import { mensajeError } from "@/lib/supabase/admin";
 
 // Evita caché en Vercel/Next.js para que siempre se lean datos frescos
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export async function GET() {
   } catch (error) {
     console.error("Error al obtener artículos:", error);
     return NextResponse.json(
-      { error: "Error al cargar los artículos" },
+      { error: "Error al cargar los artículos", detalle: mensajeError(error) },
       { status: 500 }
     );
   }

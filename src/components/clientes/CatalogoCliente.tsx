@@ -20,6 +20,7 @@ export default function CatalogoCliente() {
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [cantidades, setCantidades] = useState<Record<string, number>>({});
 
   const fechaHoy = () =>
@@ -88,7 +89,7 @@ export default function CatalogoCliente() {
     setOk("");
   }
 
-  async function handleConfirmar() {
+  function abrirConfirmacion() {
     setError("");
     setOk("");
     if (lineas.length === 0) {
@@ -97,6 +98,20 @@ export default function CatalogoCliente() {
     }
     if (!usuario?.nombre?.trim()) {
       setError("No se pudo identificar al usuario");
+      return;
+    }
+    setMostrarConfirmacion(true);
+  }
+
+  function cerrarConfirmacion() {
+    if (enviando) return;
+    setMostrarConfirmacion(false);
+  }
+
+  async function handleConfirmar() {
+    if (!usuario?.nombre?.trim()) {
+      setError("No se pudo identificar al usuario");
+      setMostrarConfirmacion(false);
       return;
     }
 
@@ -121,9 +136,11 @@ export default function CatalogoCliente() {
       setCantidades(
         Object.fromEntries(articulos.map((a) => [a.idarticulo, 0]))
       );
+      setMostrarConfirmacion(false);
       setOk("Pedido enviado. Podés verlo en Mis pedidos.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar");
+      setMostrarConfirmacion(false);
     } finally {
       setEnviando(false);
     }
@@ -289,15 +306,122 @@ export default function CatalogoCliente() {
             </div>
             <button
               type="button"
-              onClick={handleConfirmar}
+              onClick={abrirConfirmacion}
               disabled={enviando || lineas.length === 0}
               className="btn-primary w-full sm:w-auto disabled:opacity-60"
             >
-              {enviando ? "Enviando…" : "Confirmar pedido"}
+              Confirmar pedido
             </button>
           </div>
         </div>
       </div>
+
+      {mostrarConfirmacion && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
+          onClick={cerrarConfirmacion}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-confirmar-pedido"
+        >
+          <div
+            className="w-full max-w-lg rounded-xl bg-white shadow-xl my-8 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-red-600 px-4 py-3 flex items-center justify-between">
+              <h2
+                id="titulo-confirmar-pedido"
+                className="text-lg font-semibold text-white"
+              >
+                ¿Confirmás el pedido?
+              </h2>
+              <button
+                type="button"
+                onClick={cerrarConfirmacion}
+                disabled={enviando}
+                className="text-white/90 hover:text-white p-1 rounded disabled:opacity-50"
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              <p className="text-sm text-slate-600">
+                Revisá el detalle antes de enviar. Podés cancelar si hay algo
+                para corregir.
+              </p>
+
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 mb-2">
+                  Artículos
+                </h3>
+                <div className="rounded-lg border border-slate-200 overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-slate-50">
+                        <th className="px-3 py-2 text-left font-medium text-slate-600">
+                          Artículo
+                        </th>
+                        <th className="px-3 py-2 text-right font-medium text-slate-600">
+                          Cant.
+                        </th>
+                        <th className="px-3 py-2 text-right font-medium text-slate-600">
+                          Total
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lineas.map((l) => (
+                        <tr
+                          key={l.idarticulo}
+                          className="border-t border-slate-100"
+                        >
+                          <td className="px-3 py-2 text-slate-800">{l.nombre}</td>
+                          <td className="px-3 py-2 text-right text-slate-700">
+                            {l.cantidad}
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium text-slate-800">
+                            {formatPrecio(l.total)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center pt-3 border-t border-slate-200">
+                <span className="text-base font-semibold text-slate-700">
+                  Total
+                </span>
+                <span className="text-xl font-bold text-red-600">
+                  {formatPrecio(totalVenta)}
+                </span>
+              </div>
+
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={cerrarConfirmacion}
+                  disabled={enviando}
+                  className="btn-secondary w-full sm:w-auto disabled:opacity-60"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmar}
+                  disabled={enviando}
+                  className="btn-primary w-full sm:w-auto disabled:opacity-60"
+                >
+                  {enviando ? "Enviando…" : "Confirmar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

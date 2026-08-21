@@ -3,6 +3,7 @@ export const BUCKET_FOTO_ARTICULO = "foto_articulo_venta";
 function supabaseBaseUrl(): string {
   return (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "")
     .trim()
+    .replace(/^["']|["']$/g, "")
     .replace(/\/rest\/v1\/?$/, "")
     .replace(/\/$/, "");
 }

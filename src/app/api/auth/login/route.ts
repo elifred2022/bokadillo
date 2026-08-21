@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getClientePorEmail } from "@/lib/db/clientes";
 import { verificarClave } from "@/lib/auth";
+import { mensajeError } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error en login:", error);
     return NextResponse.json(
-      { error: "Error al iniciar sesión" },
+      { error: "Error al iniciar sesión", detalle: mensajeError(error) },
       { status: 500 }
     );
   }
