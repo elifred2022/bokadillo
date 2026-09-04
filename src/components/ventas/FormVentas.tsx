@@ -189,7 +189,7 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
 
   useEffect(() => {
     if (venta) {
-      const id = requestAnimationFrame(() => setFecha(fechaHoy()));
+      setFecha(venta.fecha ?? "");
       setCliente(venta.cliente ?? "");
       const ent = (venta.entregado ?? "").trim().toLowerCase();
       if (esFechaValida(venta.entregado ?? "")) {
@@ -215,19 +215,18 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
       } else {
         setLineas([]);
       }
-      return () => cancelAnimationFrame(id);
-    } else {
-      const id = requestAnimationFrame(() => setFecha(fechaHoy()));
-      setCliente("");
-      setEstado("pendiente");
-      setFechaEntregado("");
-      setLineas([]);
-      setCodbarraBuscar("");
-      setNombreBuscar("");
-      setArticuloEncontrado(null);
-      setPrecioActual("");
-      return () => cancelAnimationFrame(id);
+      return;
     }
+    const id = requestAnimationFrame(() => setFecha(fechaHoy()));
+    setCliente("");
+    setEstado("pendiente");
+    setFechaEntregado("");
+    setLineas([]);
+    setCodbarraBuscar("");
+    setNombreBuscar("");
+    setArticuloEncontrado(null);
+    setPrecioActual("");
+    return () => cancelAnimationFrame(id);
   }, [venta]);
 
   const totalVenta = lineas.reduce((sum, l) => sum + l.total, 0);
@@ -249,18 +248,18 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
 
     setEnviando(true);
 
-    const fechaEnviar = fecha.trim() || fechaHoy();
-
     const clienteSel = clientes.find((c) => c.nombre === cliente);
     const payload: Record<string, unknown> = {
-      fecha: fechaEnviar,
       cliente: cliente.trim(),
       idcliente: clienteSel?.idcliente ?? "",
       articulos,
       total: totalVenta,
     };
     if (venta) {
-      payload.entregado = estado === "entregado" ? fechaEntregado.trim() || "pendiente" : estado;
+      payload.entregado =
+        estado === "entregado" ? fechaEntregado.trim() || fechaHoy() : estado;
+    } else {
+      payload.fecha = fecha.trim() || fechaHoy();
     }
 
     try {
@@ -315,11 +314,13 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
 
           <div>
             <label htmlFor="fecha" className="mb-1 block text-sm font-medium text-slate-700">
-              Fecha <span className="text-red-500">*</span>
+              Fecha de creación
             </label>
             <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700">
-              {fecha || "—"}{" "}
-              <span className="text-slate-500 text-sm">(fecha actual)</span>
+              {fecha || "—"}
+              {!venta ? (
+                <span className="text-slate-500 text-sm"> (fecha actual)</span>
+              ) : null}
             </div>
           </div>
 
@@ -332,7 +333,13 @@ export default function FormVentas({ onCerrar, venta, onMutate }: FormVentasProp
                 id="estado"
                 name="estado"
                 value={estado}
-                onChange={(e) => setEstado(e.target.value as typeof estado)}
+                onChange={(e) => {
+                  const next = e.target.value as typeof estado;
+                  setEstado(next);
+                  if (next === "entregado" && !fechaEntregado) {
+                    setFechaEntregado(fechaHoy());
+                  }
+                }}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-800 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               >
                 <option value="pendiente">Nuevo pedido</option>

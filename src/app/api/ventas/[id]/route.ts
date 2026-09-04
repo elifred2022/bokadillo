@@ -22,7 +22,7 @@ export async function PUT(
       );
     }
     const body = await request.json();
-    const { fecha, articulos, total, cliente, idcliente, entregado } = body;
+    const { articulos, total, cliente, idcliente, entregado } = body;
 
     const ventas = await getVentas();
     const ventaActual = ventas.find((v) => v.idventa.trim() === id.trim());
@@ -75,7 +75,6 @@ export async function PUT(
     }
 
     await actualizarVenta(id, {
-      ...(fecha != null && { fecha: String(fecha).trim() }),
       ...(cliente != null && { cliente: String(cliente).trim() }),
       ...(idcliente != null && { idcliente: String(idcliente).trim() }),
       ...(entregado != null && { entregado: String(entregado).trim() }),

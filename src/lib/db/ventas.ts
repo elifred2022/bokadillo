@@ -230,7 +230,6 @@ export async function actualizarVenta(
           venta.entregado != null
             ? String(venta.entregado).trim()
             : actual.entregado,
-        fecha: venta.fecha ?? actual.fecha,
       })
     )
     .eq("id", idVal)
